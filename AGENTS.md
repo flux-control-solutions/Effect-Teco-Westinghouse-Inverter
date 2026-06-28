@@ -1,12 +1,23 @@
 # effect-teco-westinghouse-inverter
 
-## Stack
+## Quickstart
 
-- **Runtime**: Bun only — never use Node, npm, pnpm, yarn, or vite.
-- **Language**: TypeScript 6 (ESNext, `verbatimModuleSyntax`, bundler resolution, `module: "Preserve"`).
-- **Core lib**: `effect` (^3.21.4), `effect-modbus-rs` (linked).
-- **LSP**: `@effect/language-service` plugin in `tsconfig.json` `compilerOptions.plugins`.
-- **License**: GPL-3.0.
+- `bun install` - Install dependencies
+- `bun run index.ts` - Run the application
+- `bun run typecheck` - Type-check the project
+- `bun run build` - Build the project to `./dist`
+
+## Current Layout
+
+```
+.
+├── index.ts                 — Application entry point (Bun)
+├── package.json
+├── README.md                — Project documentation
+├── tsconfig.json            — TypeScript configuration
+├── LICENSE                  — Project license
+└── node_modules             — Dependencies
+```
 
 ## Commands
 
@@ -15,37 +26,43 @@
 | Install    | `bun install`       |
 | Type-check | `bun run typecheck` |
 | Build      | `bun run build`     |
+| Run        | `bun run index.ts`  |
 
-## Source layout
+## Build Process
 
-```
-index.ts                     — Re-exports all public API from src/
-src/
-  errors.ts                  — Data.TaggedError types + toModbusError converter
-shared-transport.ts        — Generic scoped transport lifecycle management
-src/TecoInverterTransportService.ts — Scoped Effect.Service wrapping AsyncTecoInverterTransport
-examples/
-  tc-basic.ts               — TC usage pattern
-```
+The build runs two commands:
 
-## Architecture
+1. `bun build ./index.ts --outdir ./dist --target node --external effect --external effect-modbus-rs --external modbus-rs` - Creates the bundled dist file
+2. `tsc --noEmit false --emitDeclarationOnly --outDir ./dist --rootDir .` - Creates type definitions
 
-## Conventions
+## TypeScript Configuration
 
-- Follow `effect` idioms: `Effect`, `Layer`, `Schema`, `Scope`, `Data.TaggedError` throughout.
-- Use `Bun.test` / `import { test, expect } from "bun:test"` for tests.
-- Always `import type` for type-only imports (`verbatimModuleSyntax`).
-- Don't use `dotenv` — Bun loads `.env` automatically.
+Key tsconfig.json settings:
 
-## Tooling
+- `module: "Preserve"` - ESM output preserved
+- `verbatimModuleSyntax: true` - Exact import syntax from sources
+- `plugins: [{"name": "@effect/language-service"}]` - Effect LSP support
+- Strict mode enabled with custom relaxed flags (noUnusedLocals/Parameters)
 
-- **Fallow MCP** is configured via `opencode.json` (`bunx fallow-mcp`). The `.fallowrc.json` entry covers `index.ts`, `src/`, and `examples/`. Run `fallow audit` for pre-commit quality checks on changed code.
+## Dependencies
 
-## Referencing upstream libraries
+- `effect: ^3.21.4` - Core functional library
+- `effect-modbus-rs: link:effect-modbus-rs` - Linked submodule package
+- `@effect/language-service: ^0.86.2` - TypeScript language service plugin
+- `typescript: ^6.0.3` - TypeScript compiler
 
-Shallow clones of upstream libraries exist under `references/` for offline browsing (gitignored; re-clone if stale):
+## Runtime Environment
 
-| Reference | Local path                    | Useful subdirectory                                              |
-| --------- | ----------------------------- | ---------------------------------------------------------------- |
-| effect    | `references/effect`           | `packages/effect/src/` for core types                            |
-| modbus-rs | `references/effect-modbus-rs` | `mbus-ffi/nodejs/` (`index.d.ts` for types, `index.js` for impl) |
+- **Bun** only - No Node, npm, pnpm, yarn, or vite
+- Bun v1.3.14 used in the project (from `bun init`)
+- Bun automatically loads `.env` files (no dotenv needed)
+- The project uses ESNext module syntax
+
+## References
+
+Upstream libraries are available locally under ignored `references/` directory:
+
+- `references/effect` - Core `effect` library source
+- `references/effect-modbus-rs` - Modbus-RS implementation source
+
+The skill at `.opencode/skills/reference-dependencies/SKILL.md` is the dedicated instruction for reference lookup.
