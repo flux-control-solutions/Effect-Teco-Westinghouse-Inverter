@@ -1,0 +1,28 @@
+{
+  "name": "effect-teco-westinghouse-inverter",
+  "version": "1.0.0",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "rm -rf ./dist && bun build ./index.ts --outdir ./dist --target node --external effect --external effect-modbus-rs --external modbus-rs && tsc --noEmit false --emitDeclarationOnly --outDir ./dist --rootDir ."
+  },
+  "devDependencies": {
+    "@effect/language-service": "^0.86.2",
+    "@types/bun": "latest",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "effect": "^3.21.4",
+    "effect-modbus-rs": "link:effect-modbus-rs"
+  }
+}
