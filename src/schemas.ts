@@ -1,4 +1,4 @@
-import { Brand, ParseResult, Schema } from "effect";
+import { Brand, ParseResult, Pretty, Schema } from "effect";
 import { bit } from "./utils";
 
 /**
@@ -123,6 +123,7 @@ export const CommandWordSchema = UInt16.pipe(
  */
 export const decodeCommandWord = Schema.decodeUnknown(CommandWordSchema);
 export const encodeCommandWord = Schema.encode(CommandWordSchema);
+export const formattedCommandWord = Pretty.make(CommandWordSchema);
 
 /**
  * Patch-friendly input for library ergonomics.
