@@ -1,7 +1,33 @@
 import { Effect } from "effect";
 import { AsciiTransportService, RtuTransportService } from "effect-modbus-rs";
-import { COMMAND_REGISTERS, MONITOR_REGISTERS } from "./Registers";
+import {
+  COMMAND_REGISTERS, MONITOR_REGISTERS,
+  GROUP_00_Basic_Parameters,
+  GROUP_01_VF_Control_Parameters,
+  GROUP_02_IM_Motor_Parameters,
+  GROUP_03_External_Digital_Input_and_Output_Parameters,
+  GROUP_04_External_Analog_Input_and_Output_Parameters,
+  GROUP_05_Multi_Speed_Parameters,
+  GROUP_06_Automatic_Program_Operation_Parameters,
+  GROUP_07_Start_Stop_Parameters,
+  GROUP_08_Protection_Parameters,
+  GROUP_09_Communication_Parameters,
+  GROUP_10_PID_Parameters,
+  GROUP_11_Auxiliary_Parameters,
+  GROUP_12_Monitoring_Parameters,
+  GROUP_13_Maintenance_Parameters,
+  GROUP_14_PLC_Parameters,
+  GROUP_15_PLC_Monitoring_Parameters,
+  GROUP_16_LCD_Parameters,
+  GROUP_17_Automatic_Tuning_Parameters,
+  GROUP_18_Slip_Compensation_Parameters,
+  GROUP_19_Wobble_Frequency_Parameters,
+  GROUP_20_Speed_Control_Parameters,
+  GROUP_21_Torque_And_Position_Control_Parameters,
+  GROUP_22_PM_Motor_Parameters,
+} from "./Registers";
 import * as S from "./schemas";
+import * as P from "./parameters";
 
 export class TecoInverterService extends Effect.Service<TecoInverterService>()(
   "TecoInverterService",
@@ -61,6 +87,7 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
         (deviceId: number) => {
           const read = readHolding(address, decode)(deviceId);
           const update = Effect.fnUntraced(function* (value: T) {
+            cacheDevice(deviceId);
             const client = yield* transport.withClient(deviceId);
             const encoded = yield* encode(value);
             yield* client.writeSingleRegister({ address, value: encoded });
@@ -76,6 +103,21 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
         (deviceId: number) => ({
           read: readHolding(address, decode)(deviceId),
         });
+
+      const makeGroupParamOps = <T extends Record<string, { decode: any; encode: any }>>(
+        params: T,
+        registerMap: Record<string, any>,
+      ) => {
+        const result: Record<string, any> = {};
+        for (const key of Object.keys(params)) {
+          const address = registerMap[`_${key.replace("-", "_")}`];
+          if (address !== undefined) {
+            const entry = params[key]!
+            result[key] = makeReadWrite(address, entry.decode, entry.encode);
+          }
+        }
+        return result;
+      };
 
       return {
         operationCommand: makeReadModifyWrite(
@@ -171,6 +213,31 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
           MONITOR_REGISTERS.A510_CHECK_MONITOR,
           S.decodeA510CheckMonitor,
         ),
+        parameters: {
+          group00: makeGroupParamOps(P.group00.group00Params, GROUP_00_Basic_Parameters),
+          group01: makeGroupParamOps(P.group01.group01Params, GROUP_01_VF_Control_Parameters),
+          group02: makeGroupParamOps(P.group02.group02Params, GROUP_02_IM_Motor_Parameters),
+          group03: makeGroupParamOps(P.group03.group03Params, GROUP_03_External_Digital_Input_and_Output_Parameters),
+          group04: makeGroupParamOps(P.group04.group04Params, GROUP_04_External_Analog_Input_and_Output_Parameters),
+          group05: makeGroupParamOps(P.group05.group05Params, GROUP_05_Multi_Speed_Parameters),
+          group06: makeGroupParamOps(P.group06.group06Params, GROUP_06_Automatic_Program_Operation_Parameters),
+          group07: makeGroupParamOps(P.group07.group07Params, GROUP_07_Start_Stop_Parameters),
+          group08: makeGroupParamOps(P.group08.group08Params, GROUP_08_Protection_Parameters),
+          group09: makeGroupParamOps(P.group09.group09Params, GROUP_09_Communication_Parameters),
+          group10: makeGroupParamOps(P.group10.group10Params, GROUP_10_PID_Parameters),
+          group11: makeGroupParamOps(P.group11.group11Params, GROUP_11_Auxiliary_Parameters),
+          group12: makeGroupParamOps(P.group12.group12Params, GROUP_12_Monitoring_Parameters),
+          group13: makeGroupParamOps(P.group13.group13Params, GROUP_13_Maintenance_Parameters),
+          group14: makeGroupParamOps(P.group14.group14Params, GROUP_14_PLC_Parameters),
+          group15: makeGroupParamOps(P.group15.group15Params, GROUP_15_PLC_Monitoring_Parameters),
+          group16: makeGroupParamOps(P.group16.group16Params, GROUP_16_LCD_Parameters),
+          group17: makeGroupParamOps(P.group17.group17Params, GROUP_17_Automatic_Tuning_Parameters),
+          group18: makeGroupParamOps(P.group18.group18Params, GROUP_18_Slip_Compensation_Parameters),
+          group19: makeGroupParamOps(P.group19.group19Params, GROUP_19_Wobble_Frequency_Parameters),
+          group20: makeGroupParamOps(P.group20.group20Params, GROUP_20_Speed_Control_Parameters),
+          group21: makeGroupParamOps(P.group21.group21Params, GROUP_21_Torque_And_Position_Control_Parameters),
+          group22: makeGroupParamOps(P.group22.group22Params, GROUP_22_PM_Motor_Parameters),
+        },
       };
     }),
   },
