@@ -1,5 +1,6 @@
-import { Brand, ParseResult, Pretty, Schema } from "effect";
+import { Brand, Effect, ParseResult, Pretty, Schema } from "effect";
 import { bit } from "./utils";
+import { readOnlyEncodeFailure } from "./errors";
 
 /**
  * Branded 16-bit unsigned word for Modbus register values.
@@ -27,47 +28,61 @@ export class CommandWordFlags extends Schema.Class<CommandWordFlags>(
   reverse: Schema.Boolean,
   externalFault: Schema.Boolean,
   faultReset: Schema.Boolean,
-  jog: Schema.Boolean,
   commS1: Schema.Boolean,
   commS2: Schema.Boolean,
   commS3: Schema.Boolean,
   commS4: Schema.Boolean,
   commS5: Schema.Boolean,
+  commS6: Schema.Boolean,
+  commS7: Schema.Boolean,
+  commS8: Schema.Boolean,
   inverterMode: Schema.Boolean,
   torqueByComm: Schema.Boolean,
 }) {
-  static empty = new CommandWordFlags({
-    run: false,
-    reverse: false,
-    externalFault: false,
-    faultReset: false,
-    jog: false,
-    commS1: false,
-    commS2: false,
-    commS3: false,
-    commS4: false,
-    commS5: false,
-    inverterMode: false,
-    torqueByComm: false,
-  });
+  static get empty() {
+    return new CommandWordFlags({
+      run: false,
+      reverse: false,
+      externalFault: false,
+      faultReset: false,
+      commS1: false,
+      commS2: false,
+      commS3: false,
+      commS4: false,
+      commS5: false,
+      commS6: false,
+      commS7: false,
+      commS8: false,
+      inverterMode: false,
+      torqueByComm: false,
+    });
+  }
 
-  static runForward = new CommandWordFlags({
-    ...CommandWordFlags.empty,
-    run: true,
-  });
+  static get runForward() {
+    return new CommandWordFlags({
+      ...CommandWordFlags.empty,
+      run: true,
+    });
+  }
 
-  static runReverse = new CommandWordFlags({
-    ...CommandWordFlags.empty,
-    run: true,
-    reverse: true,
-  });
+  static get runReverse() {
+    return new CommandWordFlags({
+      ...CommandWordFlags.empty,
+      run: true,
+      reverse: true,
+    });
+  }
 
-  static stop = CommandWordFlags.empty;
+  static get stop() {
+    return CommandWordFlags.empty;
+  }
 
-  static resetFaultPulse = new CommandWordFlags({
-    ...CommandWordFlags.empty,
-    faultReset: true,
-  });
+  static get resetFaultPulse() {
+    return new CommandWordFlags({
+      ...CommandWordFlags.empty,
+      faultReset: true,
+    });
+  }
 }
 
 /**
@@ -84,14 +99,16 @@ export const CommandWordSchema = UInt16.pipe(
           reverse: (word & bit(1)) !== 0,
           externalFault: (word & bit(2)) !== 0,
           faultReset: (word & bit(3)) !== 0,
-          jog: (word & bit(4)) !== 0,
-          commS1: (word & bit(5)) !== 0,
-          commS2: (word & bit(6)) !== 0,
-          commS3: (word & bit(7)) !== 0,
-          commS4: (word & bit(8)) !== 0,
-          commS5: (word & bit(9)) !== 0,
-          inverterMode: (word & bit(10)) !== 0,
-          torqueByComm: (word & bit(11)) !== 0,
+          commS1: (word & bit(6)) !== 0,
+          commS2: (word & bit(7)) !== 0,
+          commS3: (word & bit(8)) !== 0,
+          commS4: (word & bit(9)) !== 0,
+          commS5: (word & bit(10)) !== 0,
+          commS6: (word & bit(11)) !== 0,
+          commS7: (word & bit(12)) !== 0,
+          commS8: (word & bit(13)) !== 0,
+          inverterMode: (word & bit(14)) !== 0,
+          torqueByComm: (word & bit(15)) !== 0,
         }),
       ),
     encode: (flags, _, ast) => {
@@ -100,14 +117,16 @@ export const CommandWordSchema = UInt16.pipe(
         (flags.reverse ? bit(1) : 0) |
         (flags.externalFault ? bit(2) : 0) |
         (flags.faultReset ? bit(3) : 0) |
-        (flags.jog ? bit(4) : 0) |
-        (flags.commS1 ? bit(5) : 0) |
-        (flags.commS2 ? bit(6) : 0) |
-        (flags.commS3 ? bit(7) : 0) |
-        (flags.commS4 ? bit(8) : 0) |
-        (flags.commS5 ? bit(9) : 0) |
-        (flags.inverterMode ? bit(10) : 0) |
-        (flags.torqueByComm ? bit(11) : 0);
+        (flags.commS1 ? bit(6) : 0) |
+        (flags.commS2 ? bit(7) : 0) |
+        (flags.commS3 ? bit(8) : 0) |
+        (flags.commS4 ? bit(9) : 0) |
+        (flags.commS5 ? bit(10) : 0) |
+        (flags.commS6 ? bit(11) : 0) |
+        (flags.commS7 ? bit(12) : 0) |
+        (flags.commS8 ? bit(13) : 0) |
+        (flags.inverterMode ? bit(14) : 0) |
+        (flags.torqueByComm ? bit(15) : 0);
 
       return Number.isInteger(word) && word >= 0 && word <= 0xffff
         ? ParseResult.succeed(word as UInt16)
@@ -139,12 +158,14 @@ export class CommandWordPatch extends Schema.Class<CommandWordPatch>(
   reverse: Schema.optional(Schema.Boolean),
   externalFault: Schema.optional(Schema.Boolean),
   faultReset: Schema.optional(Schema.Boolean),
-  jog: Schema.optional(Schema.Boolean),
   commS1: Schema.optional(Schema.Boolean),
   commS2: Schema.optional(Schema.Boolean),
   commS3: Schema.optional(Schema.Boolean),
   commS4: Schema.optional(Schema.Boolean),
   commS5: Schema.optional(Schema.Boolean),
+  commS6: Schema.optional(Schema.Boolean),
+  commS7: Schema.optional(Schema.Boolean),
+  commS8: Schema.optional(Schema.Boolean),
   inverterMode: Schema.optional(Schema.Boolean),
   torqueByComm: Schema.optional(Schema.Boolean),
 }) {}
@@ -158,12 +179,14 @@ export const mergeCommandWordPatch = (
     reverse: patch.reverse ?? base.reverse,
     externalFault: patch.externalFault ?? base.externalFault,
     faultReset: patch.faultReset ?? base.faultReset,
-    jog: patch.jog ?? base.jog,
     commS1: patch.commS1 ?? base.commS1,
     commS2: patch.commS2 ?? base.commS2,
     commS3: patch.commS3 ?? base.commS3,
     commS4: patch.commS4 ?? base.commS4,
     commS5: patch.commS5 ?? base.commS5,
+    commS6: patch.commS6 ?? base.commS6,
+    commS7: patch.commS7 ?? base.commS7,
+    commS8: patch.commS8 ?? base.commS8,
     inverterMode: patch.inverterMode ?? base.inverterMode,
     torqueByComm: patch.torqueByComm ?? base.torqueByComm,
   });
@@ -175,11 +198,6 @@ export const commandWord = {
   stop: (): CommandWordFlags => CommandWordFlags.stop,
   runForward: (): CommandWordFlags => CommandWordFlags.runForward,
   runReverse: (): CommandWordFlags => CommandWordFlags.runReverse,
-  jogForward: (): CommandWordFlags =>
-    new CommandWordFlags({
-      ...CommandWordFlags.empty,
-      jog: true,
-    }),
   resetFaultPulse: (): CommandWordFlags => CommandWordFlags.resetFaultPulse,
   withInverterMode: (base: CommandWordFlags): CommandWordFlags =>
     new CommandWordFlags({
@@ -357,11 +375,13 @@ export class DigitalOutCommandFlags extends Schema.Class<DigitalOutCommandFlags>
   ry2: Schema.Boolean,
   pulse: Schema.Boolean,
 }) {
-  static empty = new DigitalOutCommandFlags({
-    ry1: false,
-    ry2: false,
-    pulse: false,
-  });
+  static get empty() {
+    return new DigitalOutCommandFlags({
+      ry1: false,
+      ry2: false,
+      pulse: false,
+    });
+  }
 }
 
 /**
@@ -429,24 +449,26 @@ export class StateMonitorFlags extends Schema.Class<StateMonitorFlags>(
   seqNotFromComm: Schema.Boolean,
   overTorque: Schema.Boolean,
 }) {
-  static empty = new StateMonitorFlags({
-    operation: false,
-    direction: false,
-    inverterReady: false,
-    fault: false,
-    warning: false,
-    zeroSpeed: false,
-    is440V: false,
-    frequencyAgree: false,
-    setFrequencyAgree: false,
-    frequencyDetection1: false,
-    frequencyDetection2: false,
-    underVoltage: false,
-    baseblock: false,
-    freqRefNotFromComm: false,
-    seqNotFromComm: false,
-    overTorque: false,
-  });
+  static get empty() {
+    return new StateMonitorFlags({
+      operation: false,
+      direction: false,
+      inverterReady: false,
+      fault: false,
+      warning: false,
+      zeroSpeed: false,
+      is440V: false,
+      frequencyAgree: false,
+      setFrequencyAgree: false,
+      frequencyDetection1: false,
+      frequencyDetection2: false,
+      underVoltage: false,
+      baseblock: false,
+      freqRefNotFromComm: false,
+      seqNotFromComm: false,
+      overTorque: false,
+    });
+  }
 }
 
 /**
@@ -477,7 +499,8 @@ export const StateMonitorSchema = UInt16.pipe(
           overTorque: (word & bit(15)) !== 0,
         }),
       ),
-    encode: () => ParseResult.succeed(0 as UInt16),
+    encode: (flags, _, ast) =>
+      readOnlyEncodeFailure("State monitor register 0x2520", flags, ast),
   }),
 );
 
@@ -527,6 +550,10 @@ const errorDescriptionLabels: Record<number, string> = {
   24: "External Fault 08",
   25: "FB (Feedback)",
   26: "OPR (Option)",
+  27: "Reserved",
+  28: "CE (Communication error)",
+  29: "STO (Safe torque off)",
+  30: "Over Torque 2",
   38: "CF07 (Configuration error 07)",
   41: "OLDOP",
   46: "OH4 (Motor overheat)",
@@ -541,11 +568,15 @@ const errorDescriptionLabels: Record<number, string> = {
  * domain format = ErrorDescriptionMonitor (resolved description text)
  */
 export const ErrorDescriptionMonitorSchema = UInt16.pipe(
-  Schema.transform(ErrorDescriptionMonitor, {
+  Schema.transformOrFail(ErrorDescriptionMonitor, {
     decode: (word) =>
-      (errorDescriptionLabels[word] ??
-        `Unknown (${word})`) as ErrorDescriptionMonitor,
-    encode: () => 0 as UInt16,
+      Effect.succeed(
+        (errorDescriptionLabels[word] ??
+          `Unknown (${word})`) as ErrorDescriptionMonitor,
+      ),
+    encode: (value, _, ast) =>
+      readOnlyEncodeFailure("Error description monitor register 0x2521", value, ast),
+    strict: false,
   }),
 );
 
@@ -574,16 +605,18 @@ export class DigitalInStateMonitorFlags extends Schema.Class<DigitalInStateMonit
   s7: Schema.Boolean,
   s8: Schema.Boolean,
 }) {
-  static empty = new DigitalInStateMonitorFlags({
-    s1: false,
-    s2: false,
-    s3: false,
-    s4: false,
-    s5: false,
-    s6: false,
-    s7: false,
-    s8: false,
-  });
+  static get empty() {
+    return new DigitalInStateMonitorFlags({
+      s1: false,
+      s2: false,
+      s3: false,
+      s4: false,
+      s5: false,
+      s6: false,
+      s7: false,
+      s8: false,
+    });
+  }
 }
 
 /**
@@ -606,7 +639,9 @@ export const DigitalInStateMonitorSchema = UInt16.pipe(
           s8: (word & bit(7)) !== 0,
         }),
       ),
-    encode: () => ParseResult.succeed(0 as UInt16),
+    encode: (flags, _, ast) =>
+      readOnlyEncodeFailure("Digital input state register 0x2522", flags, ast),
+    strict: false,
   }),
 );
 
@@ -623,9 +658,11 @@ export const formattedDigitalInStateMonitor = Pretty.make(DigitalInStateMonitorS
  * domain format = FrequencyHz
  */
 export const FrequencyCommandMonitorSchema = UInt16.pipe(
-  Schema.transform(FrequencyHz, {
-    decode: (word) => (word * 0.01) as FrequencyHz,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(FrequencyHz, {
+    decode: (word) => Effect.succeed((word * 0.01) as FrequencyHz),
+    encode: (hz, _, ast) =>
+      readOnlyEncodeFailure("Frequency command monitor register 0x2523", hz, ast),
+    strict: false,
   }),
 );
 
@@ -646,9 +683,11 @@ export const formattedFrequencyCommandMonitor = Pretty.make(
  * domain format = FrequencyHz
  */
 export const OutputFrequencyMonitorSchema = UInt16.pipe(
-  Schema.transform(FrequencyHz, {
-    decode: (word) => (word * 0.01) as FrequencyHz,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(FrequencyHz, {
+    decode: (word) => Effect.succeed((word * 0.01) as FrequencyHz),
+    encode: (hz, _, ast) =>
+      readOnlyEncodeFailure("Output frequency monitor register 0x2524", hz, ast),
+    strict: false,
   }),
 );
 
@@ -680,9 +719,11 @@ export const DCBusVoltage = Schema.Number.pipe(
  * domain format = DCBusVoltage
  */
 export const DCBusVoltageCommandMonitorSchema = UInt16.pipe(
-  Schema.transform(DCBusVoltage, {
-    decode: (word) => (word * 0.1) as DCBusVoltage,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(DCBusVoltage, {
+    decode: (word) => Effect.succeed((word * 0.1) as DCBusVoltage),
+    encode: (voltage, _, ast) =>
+      readOnlyEncodeFailure("DC voltage command monitor register 0x2526", voltage, ast),
+    strict: false,
   }),
 );
 
@@ -714,9 +755,11 @@ export const CurrentAmps = Schema.Number.pipe(
  * domain format = CurrentAmps
  */
 export const OutputCurrentMonitorSchema = UInt16.pipe(
-  Schema.transform(CurrentAmps, {
-    decode: (word) => (word * 0.1) as CurrentAmps,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(CurrentAmps, {
+    decode: (word) => Effect.succeed((word * 0.1) as CurrentAmps),
+    encode: (current, _, ast) =>
+      readOnlyEncodeFailure("Output current monitor register 0x2527", current, ast),
+    strict: false,
   }),
 );
 
@@ -833,11 +876,15 @@ const warningDescriptionLabels: Record<number, string> = {
  * domain format = WarningDescriptionMonitor (resolved description text)
  */
 export const WarningDescriptionMonitorSchema = UInt16.pipe(
-  Schema.transform(WarningDescriptionMonitor, {
+  Schema.transformOrFail(WarningDescriptionMonitor, {
     decode: (word) =>
-      (warningDescriptionLabels[word] ??
-        `Unknown warning (${word})`) as WarningDescriptionMonitor,
-    encode: () => 0 as UInt16,
+      Effect.succeed(
+        (warningDescriptionLabels[word] ??
+          `Unknown warning (${word})`) as WarningDescriptionMonitor,
+      ),
+    encode: (value, _, ast) =>
+      readOnlyEncodeFailure("Warning description monitor register 0x2528", value, ast),
+    strict: false,
   }),
 );
 
@@ -863,11 +910,13 @@ export class DigitalOutStateMonitorFlags extends Schema.Class<DigitalOutStateMon
   ry2: Schema.Boolean,
   pulse: Schema.Boolean,
 }) {
-  static empty = new DigitalOutStateMonitorFlags({
-    ry1: false,
-    ry2: false,
-    pulse: false,
-  });
+  static get empty() {
+    return new DigitalOutStateMonitorFlags({
+      ry1: false,
+      ry2: false,
+      pulse: false,
+    });
+  }
 }
 
 /**
@@ -885,7 +934,9 @@ export const DigitalOutStateMonitorSchema = UInt16.pipe(
           pulse: (word & bit(2)) !== 0,
         }),
       ),
-    encode: () => ParseResult.succeed(0 as UInt16),
+    encode: (flags, _, ast) =>
+      readOnlyEncodeFailure("Digital output state register 0x2529", flags, ast),
+    strict: false,
   }),
 );
 
@@ -906,9 +957,11 @@ export const formattedDigitalOutStateMonitor = Pretty.make(
  * domain format = Voltage
  */
 export const AnalogOut1MonitorSchema = UInt16.pipe(
-  Schema.transform(Voltage, {
-    decode: (word) => (word / 100) as Voltage,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(Voltage, {
+    decode: (word) => Effect.succeed((word / 100) as Voltage),
+    encode: (voltage, _, ast) =>
+      readOnlyEncodeFailure("Analog out 1 monitor register 0x252A", voltage, ast),
+    strict: false,
   }),
 );
 
@@ -929,9 +982,11 @@ export const formattedAnalogOut1Monitor = Pretty.make(
  * domain format = Voltage
  */
 export const AnalogOut2MonitorSchema = UInt16.pipe(
-  Schema.transform(Voltage, {
-    decode: (word) => (word / 100) as Voltage,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(Voltage, {
+    decode: (word) => Effect.succeed((word / 100) as Voltage),
+    encode: (voltage, _, ast) =>
+      readOnlyEncodeFailure("Analog out 2 monitor register 0x252B", voltage, ast),
+    strict: false,
   }),
 );
 
@@ -964,9 +1019,11 @@ export const AnalogInputPercent = Schema.Number.pipe(
  * domain format = AnalogInputPercent
  */
 export const AnalogIn1MonitorSchema = UInt16.pipe(
-  Schema.transform(AnalogInputPercent, {
-    decode: (word) => (word * 0.1) as AnalogInputPercent,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(AnalogInputPercent, {
+    decode: (word) => Effect.succeed((word * 0.1) as AnalogInputPercent),
+    encode: (percent, _, ast) =>
+      readOnlyEncodeFailure("Analog in 1 monitor register 0x252C", percent, ast),
+    strict: false,
   }),
 );
 
@@ -987,9 +1044,11 @@ export const formattedAnalogIn1Monitor = Pretty.make(
  * domain format = AnalogInputPercent
  */
 export const AnalogIn2MonitorSchema = UInt16.pipe(
-  Schema.transform(AnalogInputPercent, {
-    decode: (word) => (word * 0.1) as AnalogInputPercent,
-    encode: () => 0 as UInt16,
+  Schema.transformOrFail(AnalogInputPercent, {
+    decode: (word) => Effect.succeed((word * 0.1) as AnalogInputPercent),
+    encode: (percent, _, ast) =>
+      readOnlyEncodeFailure("Analog in 2 monitor register 0x252D", percent, ast),
+    strict: false,
   }),
 );
 
@@ -1029,10 +1088,14 @@ const a510CheckLabels: Record<number, string> = {
  * domain format = A510CheckMonitor (resolved model name)
  */
 export const A510CheckMonitorSchema = UInt16.pipe(
-  Schema.transform(A510CheckMonitor, {
+  Schema.transformOrFail(A510CheckMonitor, {
     decode: (word) =>
-      (a510CheckLabels[word] ?? `Unknown (0x${word.toString(16)})`) as A510CheckMonitor,
-    encode: () => 0 as UInt16,
+      Effect.succeed(
+        (a510CheckLabels[word] ?? `Unknown (0x${word.toString(16)})`) as A510CheckMonitor,
+      ),
+    encode: (value, _, ast) =>
+      readOnlyEncodeFailure("A510 check monitor register 0x252F", value, ast),
+    strict: false,
   }),
 );
 
