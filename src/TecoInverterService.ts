@@ -107,45 +107,25 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
         });
 
       const makeGroupParamOps = <
-        S extends Schema.Schema<any, any>,
-        T extends Record<string, ParamEntry<S>>,
-        P extends Record<string, number>,
+        T extends Record<string, ParamEntry<any>>,
+        P extends { readonly [K in keyof T]: number },
       >(
         params: T,
         registerMap: P,
       ) => {
-        const entries = Object.entries(params);
-        const transformed = entries.map(([key, entry]) => {
-          const address = registerMap[key]!;
-          return [key, makeReadWrite(address, entry.decode, entry.encode)] as [
-            string,
-            ReturnType<typeof makeReadWrite>,
-          ];
-        });
-
-        const final = Object.fromEntries(transformed);
-
-        return final;
-        // const result: any = {};
-        // for (const key of Object.keys(params)) {
-        //   const address = (registerMap as Record<string, number>)[key];
-        //   if (address !== undefined) {
-        //     const entry = params[key]!;
-        //     result[key] = makeReadWrite(address, entry.decode, entry.encode);
-        //   }
-        // }
-        // return result as {
-        //   [K in keyof T]: T[K] extends {
-        //     decode: (
-        //       raw: unknown,
-        //     ) => Effect.Effect<infer A, infer E1, infer R1>;
-        //     encode: (
-        //       value: any,
-        //     ) => Effect.Effect<number, infer E2, infer R2>;
-        //   }
-        //     ? ReturnType<typeof makeReadWrite<A, E1, R1, E2, R2>>
-        //     : never;
-        // };
+        return Object.fromEntries(
+          Object.entries(params).map(([key, entry]) => {
+            const address = (registerMap as Record<string, number>)[key]!;
+            return [key, makeReadWrite(address, entry.decode, entry.encode)];
+          }),
+        ) as unknown as {
+          [K in keyof T]: T[K] extends { schema: Schema.Schema<infer A, any> }
+            ? (deviceId: number) => {
+                read: Effect.Effect<A, any, any>;
+                update: (value: A) => Effect.Effect<void, any, any>;
+              }
+            : never;
+        };
       };
 
       return {
