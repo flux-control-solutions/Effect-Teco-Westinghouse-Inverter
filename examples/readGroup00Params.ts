@@ -1,8 +1,7 @@
-import { Console, Effect, Layer, Logger, LogLevel, Pretty } from "effect";
+import { Console, Effect, Layer, Logger, LogLevel } from "effect";
 import { TecoInverterService } from "../src/TecoInverterService";
 import { RtuTransportService } from "effect-modbus-rs";
 import { BunRuntime } from "@effect/platform-bun";
-import * as P from "../src/parameters";
 
 const deviceId = 1;
 
@@ -15,19 +14,35 @@ const program = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;
   const params = inverter.parameters.group00;
 
-  const dunno = yield* params["00-00"](deviceId).read();
+  type EffectValue<F> = F extends Effect.Effect<infer A, any, any> ? A : never;
+  type Group00Params = typeof params;
+  type Group00Row<K extends keyof Group00Params> = {
+    readonly key: K;
+    readonly description: Group00Params[K]["meta"]["name"];
+    readonly value: EffectValue<
+      ReturnType<ReturnType<Group00Params[K]>["read"]>
+    >;
+  };
+  type AnyGroup00Row = {
+    [K in keyof Group00Params]: Group00Row<K>;
+  }[keyof Group00Params];
 
-  const reads: Record<string, Effect.Effect<any, any, any>> = {};
+  const rows: AnyGroup00Row[] = [];
   for (const [key, param] of typedEntries(params)) {
-    reads[key] = param(deviceId).read();
+    const value = yield* param(deviceId).read();
+    rows.push({
+      key,
+      description: param.meta.name,
+      value,
+    } as AnyGroup00Row);
   }
 
-  const values = yield* Effect.all(reads, { concurrency: "unbounded" });
-
   yield* Console.log("=== Group 00: Basic Parameters ===");
-  for (const [key, entry] of Object.entries(P.group00.group00Params)) {
-    // @ts-expect-error - entry.schema is a union type; all schemas work with Pretty at runtime
-    yield* Console.log(`  ${key}: ${Pretty.make(entry.schema)(values[key])}`);
+  yield* Console.log("| Command Param | Description | Current Value |");
+  yield* Console.log("| --- | --- | --- |");
+
+  for (const { key, description, value } of rows) {
+    yield* Console.log(`| ${key} | ${description} | ${String(value)} |`);
   }
 });
 

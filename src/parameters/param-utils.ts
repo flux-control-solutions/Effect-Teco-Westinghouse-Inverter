@@ -1,4 +1,5 @@
 import { Effect, ParseResult, Pretty, Schema } from "effect";
+import type { ModbusError } from "effect-modbus-rs";
 import { Int16, UInt16 } from "../schemas";
 
 /**
@@ -278,11 +279,24 @@ export type ParamValueOfEntry<E extends ParamEntry<any>> = E extends ParamEntry<
   ? A
   : never;
 
+type EffectErrorOf<F> = F extends Effect.Effect<any, infer E, any> ? E : never;
+type EffectRequirementsOf<F> = F extends Effect.Effect<any, any, infer R>
+  ? R
+  : never;
+
 export type ParamOperationOfEntry<E extends ParamEntry<any>> = {
-  readonly read: () => Effect.Effect<ParamValueOfEntry<E>, unknown, unknown>;
+  readonly read: () => Effect.Effect<
+    ParamValueOfEntry<E>,
+    EffectErrorOf<ReturnType<E["decode"]>> | ModbusError,
+    EffectRequirementsOf<ReturnType<E["decode"]>>
+  >;
   readonly update: (
     value: ParamValueOfEntry<E>,
-  ) => Effect.Effect<void, unknown, unknown>;
+  ) => Effect.Effect<
+    void,
+    EffectErrorOf<ReturnType<E["encode"]>> | ModbusError,
+    EffectRequirementsOf<ReturnType<E["encode"]>>
+  >;
 };
 
 export type ParamCallableOfEntry<E extends ParamEntry<any>> = ((
