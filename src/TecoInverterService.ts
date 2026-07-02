@@ -1,36 +1,6 @@
 import { Effect, Record } from "effect";
-import {
-  AsciiTransportService,
-  RtuTransportService,
-  type ModbusError,
-} from "effect-modbus-rs";
-import {
-  COMMAND_REGISTERS,
-  MONITOR_REGISTERS,
-  GROUP_00_Basic_Parameters,
-  GROUP_01_VF_Control_Parameters,
-  GROUP_02_IM_Motor_Parameters,
-  GROUP_03_External_Digital_Input_and_Output_Parameters,
-  GROUP_04_External_Analog_Input_and_Output_Parameters,
-  GROUP_05_Multi_Speed_Parameters,
-  GROUP_06_Automatic_Program_Operation_Parameters,
-  GROUP_07_Start_Stop_Parameters,
-  GROUP_08_Protection_Parameters,
-  GROUP_09_Communication_Parameters,
-  GROUP_10_PID_Parameters,
-  GROUP_11_Auxiliary_Parameters,
-  GROUP_12_Monitoring_Parameters,
-  GROUP_13_Maintenance_Parameters,
-  GROUP_14_PLC_Parameters,
-  GROUP_15_PLC_Monitoring_Parameters,
-  GROUP_16_LCD_Parameters,
-  GROUP_17_Automatic_Tuning_Parameters,
-  GROUP_18_Slip_Compensation_Parameters,
-  GROUP_19_Wobble_Frequency_Parameters,
-  GROUP_20_Speed_Control_Parameters,
-  GROUP_21_Torque_And_Position_Control_Parameters,
-  GROUP_22_PM_Motor_Parameters,
-} from "./Registers";
+import { AsciiTransportService, RtuTransportService } from "effect-modbus-rs";
+import { COMMAND_REGISTERS, MONITOR_REGISTERS } from "./Registers";
 import * as S from "./schemas";
 import * as P from "./parameters";
 
@@ -109,41 +79,6 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
           read: () => readHolding(address, decode)(deviceId),
         });
 
-      // const makeGroupParamOps = <
-      //   T extends Record<string, ParamEntry<any>>,
-      //   P extends { readonly [K in keyof T]: number },
-      // >(
-      //   params: T,
-      //   registerMap: P,
-      // ) => {
-      //   return Object.fromEntries(
-      //     Object.entries(params).map(([key, entry]) => {
-      //       const address = (registerMap as Record<string, number>)[key]!;
-      //       return [key, makeReadWrite(address, entry.decode, entry.encode)];
-      //     }),
-      //   ) as unknown as {
-      //     [K in keyof T]: T[K] extends { schema: Schema.Schema<infer A, any> }
-      //       ? (deviceId: number) => {
-      //           // TODO: hardcoding the Error and Requirement channels here
-      //           //        because i cannot figure out how to infer them and i
-      //           //        know they are consistent
-      //           read: Effect.Effect<
-      //             A,
-      //             ParseResult.ParseError | ModbusError,
-      //             never
-      //           >;
-      //           update: (
-      //             value: A,
-      //           ) => Effect.Effect<
-      //             void,
-      //             ParseResult.ParseError | ModbusError,
-      //             never
-      //           >;
-      //         }
-      //       : never;
-      //   };
-      // };
-
       const makeParamOpsFromConfig = <C extends P.ParamConfig>(config: C) => {
         const { decode, encode } = P.fromConfig(config);
         const ops = makeReadWrite(config.register, decode, encode);
@@ -161,37 +96,7 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
 
         return Record.fromEntries(entries) as P.GroupParamOps<C>;
       };
-      //
-      // const getGroupParamOps = <C extends Record<string, P.ParamConfig>>(
-      //   configs: C,
-      // ) => {
-      //   return <K extends keyof C>(param: K) => {
-      //     const config = configs[param]!;
-      //     const { decode, encode } = P.fromConfig(config);
-      //     const read = (deviceId: number) => {
-      //       cacheDevice(deviceId);
-      //       return readHolding(config.register, decode)(deviceId);
-      //     };
-      //     const update = Effect.fnUntraced(function* (
-      //       deviceId: number,
-      //       value: Parameters<typeof encode>[0],
-      //     ) {
-      //       cacheDevice(deviceId);
-      //       const client = yield* transport.withClient(deviceId);
-      //       const encoded = yield* encode(value);
-      //       yield* client.writeSingleRegister({
-      //         address: config.register,
-      //         value: encoded,
-      //       });
-      //     });
-      //     return Object.assign({ read, update }, { meta: config.meta }) as {
-      //       readonly read: typeof read;
-      //       readonly update: typeof update;
-      //       readonly meta: C[K]["meta"];
-      //     };
-      //   };
-      // };
-      //
+
       return {
         operationCommand: makeReadModifyWrite(
           COMMAND_REGISTERS.OPERATION_COMMAND,
