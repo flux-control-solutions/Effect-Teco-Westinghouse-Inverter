@@ -1,8 +1,39 @@
 import { Effect, Record } from "effect";
-import { AsciiTransportService, RtuTransportService } from "effect-modbus-rs";
+import { AsciiTransportService, RtuTransportService, type SlaveDeviceDefinition } from "effect-modbus-rs";
 import { COMMAND_REGISTERS, MONITOR_REGISTERS } from "./Registers";
 import * as S from "./schemas";
 import * as P from "./parameters";
+
+const paramDefault = (config: P.ParamConfig): number => {
+  const raw = Number(config.meta.default);
+  if (Number.isNaN(raw)) return 0;
+  switch (config.kind) {
+    case P.ParamKind.UInt16:
+    case P.ParamKind.Enum:
+      return raw;
+    case P.ParamKind.Scaled:
+    case P.ParamKind.SignedScaled:
+      return Math.round(raw / config.factor);
+  }
+};
+
+const allParamGroups = [
+  P.group00, P.group01, P.group02, P.group03, P.group04,
+  P.group05, P.group06, P.group07, P.group08, P.group09,
+  P.group10, P.group11, P.group12, P.group13, P.group14,
+  P.group15, P.group16, P.group17, P.group18, P.group19,
+  P.group20, P.group21, P.group22,
+] as const;
+
+const paramRegisterDefs: ReadonlyArray<{
+  readonly address: number;
+  readonly default: number;
+}> = allParamGroups.flatMap((group) =>
+  Object.values(group).map((config) => ({
+    address: config.register,
+    default: paramDefault(config),
+  })),
+);
 
 export class TecoInverterService extends Effect.Service<TecoInverterService>()(
   "TecoInverterService",
@@ -241,4 +272,22 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
       };
     }),
   },
-) {}
+) {
+  static mockDevice(deviceId: number): SlaveDeviceDefinition {
+    return {
+      unitId: deviceId,
+      coils: [],
+      discreteInputs: [],
+      holdingRegisters: [
+        ...Object.values(COMMAND_REGISTERS)
+          .filter((v): v is number => typeof v === "number")
+          .map((address) => ({ address, default: 0 })),
+        ...Object.values(MONITOR_REGISTERS)
+          .filter((v): v is number => typeof v === "number")
+          .map((address) => ({ address, default: 0 })),
+        ...paramRegisterDefs,
+      ],
+      inputRegisters: [],
+    };
+  }
+}
