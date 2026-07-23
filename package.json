@@ -1,16 +1,29 @@
 {
   "name": "effect-teco-westinghouse-inverter",
   "version": "1.0.0",
-  "description": "",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "description": "Bidirectional schema transformers for Teco/Westinghouse A510 inverter Modbus parameters.",
   "type": "module",
-  "exports": {
-    ".": {
-      "import": {
+  "files": [
+    "src/**/*.ts",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      "./package.json": "./package.json",
+      ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
       }
+    }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.js"
     }
   },
   "scripts": {
@@ -33,5 +46,6 @@
   "dependencies": {
     "effect-modbus-rs": "github:justin-prather/Effect-modbus-rs",
     "modbus-schema": "github:justin-prather/modbus-schema"
-  }
+  },
+  "license": "GPL-3.0"
 }
