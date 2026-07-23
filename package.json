@@ -22,8 +22,8 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.js"
+      "types": "./index.ts",
+      "default": "./index.ts"
     }
   },
   "scripts": {
@@ -44,8 +44,8 @@
     "effect": "^3.21.4"
   },
   "dependencies": {
-    "effect-modbus-rs": "github:justin-prather/Effect-modbus-rs",
-    "modbus-schema": "github:justin-prather/modbus-schema"
+    "effect-modbus-rs": "github:flux-control-solutions/Effect-modbus-rs",
+    "modbus-schema": "github:flux-control-solutions/modbus-schema"
   },
   "license": "GPL-3.0"
 }
