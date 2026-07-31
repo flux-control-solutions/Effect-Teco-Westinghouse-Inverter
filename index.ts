@@ -1,5 +1,5 @@
 /**
- * # effect-teco-westinghouse-inverter
+ * # @flux-control/effect-teco-westinghouse-inverter
  *
  * Bidirectional schema transformers for Teco/Westinghouse A510 inverter Modbus parameters.
  *

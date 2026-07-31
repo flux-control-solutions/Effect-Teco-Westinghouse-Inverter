@@ -1,28 +1,32 @@
 # Effect-Teco-Westinghouse-Inverter
 
-**An Effect-TS service for Teco/Westinghouse A510 inverters** that wraps `effect-modbus-rs` to manage the Modbus transport, map command and monitor registers, and apply typed schemas to all parameter groups (00–22).
+**An Effect-TS service for Teco/Westinghouse A510 inverters** that wraps `@flux-control/effect-modbus-rs` to manage the Modbus transport, map command and monitor registers, and apply typed schemas to all parameter groups (00–22).
+
+For the complete API reference, see the [GitHub Pages documentation](https://flux-control-solutions.github.io/Effect-Teco-Westinghouse-Inverter/).
 
 `TecoInverterService` is a scoped `Effect.Service` that:
 
-- **Manages the transport** — Opens RTU or ASCII connections via `effect-modbus-rs` and caches a client per device ID.
+- **Manages the transport** — Opens RTU or ASCII connections via `@flux-control/effect-modbus-rs` and caches a client per device ID.
 - **Exposes operations** — Typed command registers (start/stop, frequency, torque, analog/digital outputs) with read-modify-write semantics for bitfield registers.
 - **Exposes monitoring** — Typed monitor registers (state, errors, frequency, current, voltage, etc.) that decode wire values into domain types.
 - **Maps parameters** — Typed access to every A510 parameter (Groups 00–22) with proper scaling factors (×0.001, ×0.01, ×0.1, signed Int16, etc.) applied at encode/decode time.
 
+> This project is under active development. Its API may change before the 1.0 release.
+
 ## Install
 
 ```sh
-bun add effect-teco-westinghouse-inverter
+bun add @flux-control/effect-teco-westinghouse-inverter
 ```
 
-Requires `effect`, `effect-modbus-rs`, and `modbus-schema` as peer dependencies.
+Requires `effect`, `@flux-control/effect-modbus-rs`, and `@flux-control/modbus-schema` as peer dependencies.
 
 ## Quick start
 
 ```ts
 import { Console, Effect, Layer } from 'effect';
-import { TecoInverterService } from 'effect-teco-westinghouse-inverter';
-import { SerialTransportService } from 'effect-modbus-rs';
+import { TecoInverterService } from '@flux-control/effect-teco-westinghouse-inverter';
+import { SerialTransportService } from '@flux-control/effect-modbus-rs';
 
 const program = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;
@@ -44,7 +48,7 @@ program.pipe(
 
 ## Service
 
-`TecoInverterService` is a scoped `Effect.Service` that manages a Modbus client pool per device. Provide it with `Effect.provide` alongside a transport layer (`SerialTransportService` from `effect-modbus-rs`).
+`TecoInverterService` is a scoped `Effect.Service` that manages a Modbus client pool per device. Provide it with `Effect.provide` alongside a transport layer (`SerialTransportService` from `@flux-control/effect-modbus-rs`).
 
 ### Command registers (write)
 
@@ -111,7 +115,7 @@ Each parameter callable returns `{ read(), update(value) }` for a given `deviceI
 
 ### Schema engine
 
-The device-agnostic schema factories now live in the [`modbus-schema`](../Modbus-Schema/) package:
+The device-agnostic schema factories now live in the [`@flux-control/modbus-schema`](../Modbus-Schema/) package:
 
 - **`makeParam(register, meta)`** — Simple UInt16 pass-through
 - **`makeScaledParam(register, factor, meta)`** — Scaled value (e.g., 0.01 Hz)
@@ -120,7 +124,7 @@ The device-agnostic schema factories now live in the [`modbus-schema`](../Modbus
 - **`makeBitfieldParam(register, flagsClass, bitLayout, meta)`** — Boolean flags packed into a word
 - **`makeLookupParam(register, labels, fallback, meta)`** — Decode-only lookup table with fallback
 
-Each factory returns a `ParamEntry` with both Effect-native and synchronous decode/encode APIs. Parameter group files import `ParamKind` and `ParamConfig` directly from `modbus-schema`, and `src/parameters/operations.ts` hosts the inverter-specific `ModbusError`-coupled operation types.
+Each factory returns a `ParamEntry` with both Effect-native and synchronous decode/encode APIs. Parameter group files import `ParamKind` and `ParamConfig` directly from `@flux-control/modbus-schema`, and `src/parameters/operations.ts` hosts the inverter-specific `ModbusError`-coupled operation types.
 
 ## Testing with mocks
 
@@ -128,8 +132,8 @@ Use `SerialTransportService.makeMockTransport` with `TecoInverterService.mockDev
 
 ```ts
 import { Console, Effect, Layer } from 'effect';
-import { TecoInverterService } from 'effect-teco-westinghouse-inverter';
-import { SerialTransportService } from 'effect-modbus-rs';
+import { TecoInverterService } from '@flux-control/effect-teco-westinghouse-inverter';
+import { SerialTransportService } from '@flux-control/effect-modbus-rs';
 
 const program = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;
@@ -214,7 +218,7 @@ src/
   utils.ts                   — Bit helpers (bit)
   parameters/
     index.ts                 — Re-exports all parameter groups
-    operations.ts            — Inverter-specific operation types that couple modbus-schema with effect-modbus-rs
+    operations.ts            — Inverter-specific operation types that couple @flux-control/modbus-schema with @flux-control/effect-modbus-rs
     group-00.ts … group-22.ts — Parameter configs per group
 examples/
   readOpsRegister.ts         — Read/write operation command register

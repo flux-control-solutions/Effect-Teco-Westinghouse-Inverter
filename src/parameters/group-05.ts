@@ -8,7 +8,7 @@
  * ×0.1 s, range 0.1~6000.0 s, default 10.0.
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_05_Multi_Speed_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

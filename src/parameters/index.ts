@@ -2,7 +2,7 @@
  * @fileoverview Re-exports all parameter groups (Groups 00–22).
  *
  * Each group is a record of {@link ParamConfig} objects keyed by parameter code
- * (e.g. `p00_01`, `p01_00`). The schema engine lives in the `modbus-schema`
+ * (e.g. `p00_01`, `p01_00`). The schema engine lives in the `@flux-control/modbus-schema`
  * package; configs are converted into {@link ParamCallableOfEntry} bundles by
  * {@link TecoInverterService} at service construction time.
  *

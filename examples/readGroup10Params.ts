@@ -8,8 +8,8 @@
  */
 
 import { BunRuntime } from '@effect/platform-bun';
+import { SerialTransportService } from '@flux-control/effect-modbus-rs';
 import { Console, Effect, Layer, Logger, LogLevel } from 'effect';
-import { SerialTransportService } from 'effect-modbus-rs';
 
 import { TecoInverterService } from '../src/TecoInverterService';
 

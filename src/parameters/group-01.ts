@@ -31,7 +31,7 @@
  * 01-26  V/F Curve Selection Motor 2  | 0~FF (hex)         | F             | -    | 0x011A
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_01_VF_Control_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

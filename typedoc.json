@@ -3,7 +3,7 @@
   "entryPoints": ["index.ts"],
   "tsconfig": "./tsconfig.json",
   "out": "docs-site",
-  "name": "effect-teco-westinghouse-inverter",
+  "name": "@flux-control/effect-teco-westinghouse-inverter",
   "readme": "README.md",
   "cleanOutputDir": true,
   "excludePrivate": true,

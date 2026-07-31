@@ -53,7 +53,7 @@
  * 03-53  Current Agree Level 2            | 0.0~999.9                  | 0.1           | A    | 4-33
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_03_External_Digital_Input_and_Output_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

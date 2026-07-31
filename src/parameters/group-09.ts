@@ -3,7 +3,7 @@
  * Manual pages 4-52
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_09_Communication_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Inverter-specific operation types that couple the generic
- * `modbus-schema` engine with the `effect-modbus-rs` transport layer.
+ * `@flux-control/modbus-schema` engine with the `@flux-control/effect-modbus-rs` transport layer.
  *
  * These types belong in the inverter package because they reference
  * {@link ModbusError} from the transport library. They are used by
@@ -10,15 +10,15 @@
  * @module
  */
 
-import type { Effect } from 'effect';
-import type { ModbusError } from 'effect-modbus-rs';
+import type { ModbusError } from '@flux-control/effect-modbus-rs';
 import type {
   ParamConfig,
   ParamEntry,
   ParamEntryOfConfig,
   ParamValueOfEntry,
   RegisterMeta,
-} from 'modbus-schema';
+} from '@flux-control/modbus-schema';
+import type { Effect } from 'effect';
 
 type EffectErrorOf<F> = F extends Effect.Effect<any, infer E, any> ? E : never;
 type EffectRequirementsOf<F> = F extends Effect.Effect<any, any, infer R> ? R : never;

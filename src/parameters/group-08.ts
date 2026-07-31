@@ -3,7 +3,7 @@
  * Manual pages 4-47 to 4-51
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_08_Protection_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

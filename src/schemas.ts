@@ -6,7 +6,7 @@
  * scaling factors. Monitor registers are decode-only; command registers support
  * both encode and decode.
  *
- * Schema factories from {@link modbus-schema} are reused:
+ * Schema factories from {@link @flux-control/modbus-schema} are reused:
  * - **Scaled commands/monitors** → {@link makeScaledParam} / {@link makeSignedScaledParam}
  * - **Bitfield commands/monitors** → {@link makeBitfieldParam} (generated Patch + merge)
  * - **Lookup monitors** → {@link makeLookupParam} (with fallback for unknown codes)
@@ -22,17 +22,17 @@
  * @module
  */
 
-import { Brand, Schema } from 'effect';
 import {
   type RegisterMeta,
   makeBitfieldParam,
   makeLookupParam,
   makeScaledParam,
   makeSignedScaledParam,
-} from 'modbus-schema';
+} from '@flux-control/modbus-schema';
+import { Brand, Schema } from 'effect';
 
 // Re-export wire primitives (public surface preserved)
-export { Int16, UInt16 } from 'modbus-schema';
+export { Int16, UInt16 } from '@flux-control/modbus-schema';
 
 // ── Domain brands (device-side) ──────────────────────────
 

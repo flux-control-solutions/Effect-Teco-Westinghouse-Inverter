@@ -8,7 +8,7 @@
  *   06-32…06-47  direction selections    0/1/2 (simple UInt16)
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_06_Automatic_Program_Operation_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

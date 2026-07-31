@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
+import { fromConfig } from '@flux-control/modbus-schema';
 import { Effect } from 'effect';
-import { fromConfig } from 'modbus-schema';
 
 import { group00Params } from './group-00';
 import { group01Params } from './group-01';

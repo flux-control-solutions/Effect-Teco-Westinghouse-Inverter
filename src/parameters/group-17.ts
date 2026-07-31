@@ -3,7 +3,7 @@
  * Manual pages 4-78 to 4-79 (p478, p479)
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_17_Automatic_Tuning_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

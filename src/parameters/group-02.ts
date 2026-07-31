@@ -30,7 +30,7 @@
  * 02-37  Motor Mechanical Loss             | 0.0~10.0                    | 4.0           | %    | 4-26
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_02_IM_Motor_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

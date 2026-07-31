@@ -3,7 +3,7 @@
  * Manual page 4-79
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_18_Slip_Compensation_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

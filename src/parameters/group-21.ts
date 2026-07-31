@@ -3,7 +3,7 @@
  * Manual pages 4-82 to 4-85
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_21_Torque_And_Position_Control_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

@@ -40,7 +40,7 @@
  * 00-57  SV High Speed Mode       | 0-1              | 0       | -     | 0x0039
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_00_Basic_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

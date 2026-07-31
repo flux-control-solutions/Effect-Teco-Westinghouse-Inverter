@@ -3,7 +3,7 @@
  * Manual pages 4-79 to 4-80
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_19_Wobble_Frequency_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

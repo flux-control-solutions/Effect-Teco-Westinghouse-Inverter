@@ -3,7 +3,7 @@
  * Manual pages 4-80 to 4-82 (p480, p481, p482)
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_20_Speed_Control_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

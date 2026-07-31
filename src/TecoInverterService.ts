@@ -13,7 +13,7 @@
  * @example
  * import { Effect, Layer } from "effect";
  * import { TecoInverterService } from "./src/TecoInverterService";
- * import { SerialTransportService } from "effect-modbus-rs";
+ * import { SerialTransportService } from "@flux-control/effect-modbus-rs";
  *
  * const program = Effect.gen(function* () {
  *   const inverter = yield* TecoInverterService;
@@ -31,9 +31,14 @@
  * @module
  */
 
+import { SerialTransportService, type SlaveDeviceDefinition } from '@flux-control/effect-modbus-rs';
+import {
+  type ParamConfig,
+  type ParamEntryOfConfig,
+  ParamKind,
+  fromConfig,
+} from '@flux-control/modbus-schema';
 import { Effect, Record } from 'effect';
-import { SerialTransportService, type SlaveDeviceDefinition } from 'effect-modbus-rs';
-import { type ParamConfig, type ParamEntryOfConfig, ParamKind, fromConfig } from 'modbus-schema';
 
 import * as Parameters from './parameters';
 import type { GroupParamOps, ParamCallableOfEntry } from './parameters/operations';
@@ -536,7 +541,7 @@ export class TecoInverterService extends Effect.Service<TecoInverterService>()(
    * @returns A {@link SlaveDeviceDefinition} ready to be passed to a mock transport layer
    *
    * @example
-   * import { MockTransportService } from "effect-modbus-rs";
+   * import { MockTransportService } from "@flux-control/effect-modbus-rs";
    * const mockLayer = MockTransportService.setDevices([
    *   TecoInverterService.mockDevice(1),
    * ]);

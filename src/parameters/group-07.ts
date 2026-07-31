@@ -3,7 +3,7 @@
  * Manual pages 4-44 to 4-46
  */
 
-import { ParamKind, type ParamConfig } from 'modbus-schema';
+import { ParamKind, type ParamConfig } from '@flux-control/modbus-schema';
 
 import { GROUP_07_Start_Stop_Parameters } from '../Registers';
 import type { InverterRegisterMeta } from './operations';

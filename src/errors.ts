@@ -1,1 +1,1 @@
-export { readOnlyEncodeFailure } from 'modbus-schema';
+export { readOnlyEncodeFailure } from '@flux-control/modbus-schema';
