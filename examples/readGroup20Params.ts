@@ -70,7 +70,7 @@ const SerialLayer = SerialTransportService.fromRtu({
   baudRate: 19200,
   stopBits: 1,
   dataBits: 8,
-  parity: 'None',
+  parity: 'none',
 });
 
 const layerLive = Layer.provideMerge(TecoLayer, SerialLayer);

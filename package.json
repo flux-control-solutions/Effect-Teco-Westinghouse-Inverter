@@ -45,8 +45,8 @@
     "version": "changeset version"
   },
   "dependencies": {
-    "@flux-control/effect-modbus-rs": "github:flux-control-solutions/Effect-modbus-rs",
-    "@flux-control/modbus-schema": "github:flux-control-solutions/modbus-schema"
+    "@flux-control/effect-modbus-rs": "^0.1.1",
+    "@flux-control/modbus-schema": "^0.1.2"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",

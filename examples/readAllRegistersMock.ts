@@ -56,7 +56,7 @@ const mockSerialLayer = SerialTransportService.makeMockTransport([
   baudRate: 9600,
   stopBits: 1,
   dataBits: 8,
-  parity: 'None',
+  parity: 'none',
 });
 
 const layerLive = Layer.provideMerge(TecoLayer, mockSerialLayer);
