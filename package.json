@@ -1,7 +1,7 @@
 {
   "name": "@flux-control/effect-teco-westinghouse-inverter",
   "version": "0.1.0",
-  "description": "Bidirectional schema transformers for Teco/Westinghouse A510 inverter Modbus parameters.",
+  "description": "Effect First Typesafe communication library for the Teco WestingHouse A510 Inverter Family",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
     "version": "changeset version"
   },
   "dependencies": {
-    "@flux-control/effect-modbus-rs": "^0.1.1",
+    "@flux-control/effect-modbus-rs": "^0.2.0",
     "@flux-control/modbus-schema": "^0.1.2"
   },
   "devDependencies": {

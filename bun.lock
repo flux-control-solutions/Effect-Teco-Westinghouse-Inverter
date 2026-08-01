@@ -5,7 +5,7 @@
     "": {
       "name": "@flux-control/effect-teco-westinghouse-inverter",
       "dependencies": {
-        "@flux-control/effect-modbus-rs": "^0.1.1",
+        "@flux-control/effect-modbus-rs": "^0.2.0",
         "@flux-control/modbus-schema": "^0.1.2",
       },
       "devDependencies": {
@@ -96,7 +96,7 @@
 
     "@fallow-cli/win32-x64-msvc": ["@fallow-cli/win32-x64-msvc@2.104.0", "", { "os": "win32", "cpu": "x64" }, "sha512-irER9HuZ9DXunl4H9RNsWQ9AvGmHs/Zp1+Yr2ATmgSNumERPXvgXa2IiGtCvKFqI72639TlhUj8+2WqIXZ54WQ=="],
 
-    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.1.1", "", { "dependencies": { "modbus-rs": "^0.15.3" }, "peerDependencies": { "effect": "^3.21.4" } }, "sha512-svfKZgL7ftvOedvbDgghEThmaU5CdNiR6/9fPdkXXdoSTJLiGRowRlxoe+e55XSg/RcuZphcs2WgQI3UuWNEBw=="],
+    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.2.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^3.22.0" } }, "sha512-U/gaDkXlMlAgrM6CdJNJaKN6Evfu4R/F9+ewhdIYH7CxF+9Nm+Jc6zYpKsGx1SOuLqrlXo9r7JRIjfXxPsUwYw=="],
 
     "@flux-control/modbus-schema": ["@flux-control/modbus-schema@0.1.2", "", { "peerDependencies": { "effect": "^3.21.4" } }, "sha512-IjmKKNvsew0TbJ6J1rneue+sufb/37fVIUTLTYwq9sMkKl18AoGGU1cL3hNqVO79YMKcW7rvqtwtcejAtYw2pw=="],
 
@@ -360,17 +360,19 @@
 
     "micromatch": ["micromatch@4.0.8", "", { "dependencies": { "braces": "^3.0.3", "picomatch": "^2.3.1" } }, "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA=="],
 
-    "modbus-rs": ["modbus-rs@0.15.9", "", { "optionalDependencies": { "modbus-rs-darwin-arm64": "0.15.9", "modbus-rs-darwin-x64": "0.15.9", "modbus-rs-linux-arm64-gnu": "0.15.9", "modbus-rs-linux-x64-gnu": "0.15.9", "modbus-rs-wasm": "0.15.9", "modbus-rs-win32-x64-msvc": "0.15.9" } }, "sha512-jMMA4LyVn6fG4RknLGDzzR4YOAg9AUE7uSK+FI9a3xaIHS6OuRfsL8gw6vRikrF39b3pNhp6XrAzsCC3fJXwCw=="],
+    "modbus-rs": ["modbus-rs@0.16.1", "", { "optionalDependencies": { "modbus-rs-darwin-arm64": "0.16.1", "modbus-rs-darwin-x64": "0.16.1", "modbus-rs-linux-arm64-gnu": "0.16.1", "modbus-rs-linux-x64-gnu": "0.16.1", "modbus-rs-wasm": "0.16.1", "modbus-rs-win32-x64-msvc": "0.16.0" } }, "sha512-4B0EPoAQCeLoj/0PKRrM0v9j9x7TmnPf2LfNUrvRblDxV4O1XzCIPm+ALEOeNJHei+iiAePLtjITnQOEgLVQ2w=="],
 
-    "modbus-rs-darwin-arm64": ["modbus-rs-darwin-arm64@0.15.9", "", { "os": "darwin", "cpu": "arm64" }, "sha512-T7Q2B9vgYoZNkA3nLdn8a8fQkpnQ/+BnOqteq1E88e/H8CYRZxTS8y5qIi4XabSoDpGm+4egE+j5GCdaDT9DMw=="],
+    "modbus-rs-darwin-arm64": ["modbus-rs-darwin-arm64@0.16.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-HUNZxk4gfmIvl3qtuizhHpSvAG43f42Mpnjw7OLmffNnpH7QkYA2J9EFEhI8LhlaeUE33uboByY61W/1rDSEaA=="],
 
-    "modbus-rs-darwin-x64": ["modbus-rs-darwin-x64@0.15.9", "", { "os": "darwin", "cpu": "x64" }, "sha512-WEDt12pDrHwZ6zOtzFiNysYcqBcTMLb07WRgr+613JBfhGqZTpKup09ysPQFZKzzQC9Mkz7q5MbgWoBPwP14fg=="],
+    "modbus-rs-darwin-x64": ["modbus-rs-darwin-x64@0.16.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-3LZwt2GSNQQ7qMPc4zl1f9r5Lt3yJZi8NaAVvcBCASv6fJqZWS8w/VVHsHix1TMl0UCfpVXrvm5vrZU1JKuo5A=="],
 
-    "modbus-rs-linux-arm64-gnu": ["modbus-rs-linux-arm64-gnu@0.15.9", "", { "os": "linux", "cpu": "arm64" }, "sha512-kPDg74EcEnKuNRKAm9QFvso8tRHpP5FJ3tYC5MLBGEd/XnmKU90JO/QY+yfwAwsklbqlzqxiowYkQMFLL+I/ug=="],
+    "modbus-rs-linux-arm64-gnu": ["modbus-rs-linux-arm64-gnu@0.16.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-F2tg71/yQeNQ0ssglkt1q6LjTe4jQwL8jL9o08bYeNWoOhjlCiXrPK1rchMGpkkNVbu1KNs/jn6Mw8ZZLMpUNA=="],
 
-    "modbus-rs-linux-x64-gnu": ["modbus-rs-linux-x64-gnu@0.15.9", "", { "os": "linux", "cpu": "x64" }, "sha512-8hxWP1kCrH2g4w3q1QyqTZiO4PC/gos0c1zr9Qson27PgTwgEdRtUYDnyocL93W1lrK6BoIrE3PXlVtmyz8RbQ=="],
+    "modbus-rs-linux-x64-gnu": ["modbus-rs-linux-x64-gnu@0.16.1", "", { "os": "linux", "cpu": "x64" }, "sha512-ZGwpLQf8SUPLOhGIhVx7mGD2brBGjlQ7oejzCcEw06wrGE5TvCEVVrfesBoUt3qrg3YJrFS3CirSV420WR1npA=="],
 
-    "modbus-rs-win32-x64-msvc": ["modbus-rs-win32-x64-msvc@0.15.9", "", { "os": "win32", "cpu": "x64" }, "sha512-/rTbW8aam6WqXvZo9ZXR/hJ84EwsxPmZm+Eb3MU7Y51PsW3DPDoi28W6JObx47Ocgeq6ocrkaG4CzFkCzVX7yQ=="],
+    "modbus-rs-wasm": ["modbus-rs-wasm@0.16.1", "", {}, "sha512-TSiFHg61o3c7u8My7gGMA4bm8tJfI4jZt95SXsZvr8iTs2+FjVCAlIbMMyxp1rMc+lK37kivJG9bzI6E9PftLw=="],
+
+    "modbus-rs-win32-x64-msvc": ["modbus-rs-win32-x64-msvc@0.16.0", "", { "os": "win32", "cpu": "x64" }, "sha512-FnvS9Gu6ogvMFlqclyZenXlskai8OmoYq8krSoGwyCv/jtA9zpKKKwEH0JUGNSyMc/p5MHVCpjPyodNfz7fstA=="],
 
     "mri": ["mri@1.2.0", "", {}, "sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA=="],
 
