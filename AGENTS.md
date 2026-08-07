@@ -6,7 +6,7 @@ Bidirectional schema transformers for Teco/Westinghouse A510 inverter Modbus par
 
 - **Runtime**: Bun only — never use Node, npm, pnpm, yarn, or vite.
 - **Language**: TypeScript 6 (ESNext, `verbatimModuleSyntax`, bundler resolution, `module: "Preserve"`).
-- **Core libs**: `effect` (^3.21.4), `effect-modbus-rs` (linked), `modbus-schema` (linked).
+- **Core libs**: `effect` (^3.21.4), `@flux-control/effect-modbus-rs` (^0.3.0), `@flux-control/modbus-schema` (^0.1.2) — both resolved from npm, not linked.
 - **LSP**: `@effect/language-service` plugin in `tsconfig.json` `compilerOptions.plugins`.
 - **License**: GPL-3.0.
 
