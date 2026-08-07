@@ -5,7 +5,7 @@
     "": {
       "name": "@flux-control/effect-teco-westinghouse-inverter",
       "dependencies": {
-        "@flux-control/effect-modbus-rs": "^0.2.0",
+        "@flux-control/effect-modbus-rs": "^0.3.0",
         "@flux-control/modbus-schema": "^0.1.2",
       },
       "devDependencies": {
@@ -96,7 +96,7 @@
 
     "@fallow-cli/win32-x64-msvc": ["@fallow-cli/win32-x64-msvc@2.104.0", "", { "os": "win32", "cpu": "x64" }, "sha512-irER9HuZ9DXunl4H9RNsWQ9AvGmHs/Zp1+Yr2ATmgSNumERPXvgXa2IiGtCvKFqI72639TlhUj8+2WqIXZ54WQ=="],
 
-    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.2.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^3.22.0" } }, "sha512-U/gaDkXlMlAgrM6CdJNJaKN6Evfu4R/F9+ewhdIYH7CxF+9Nm+Jc6zYpKsGx1SOuLqrlXo9r7JRIjfXxPsUwYw=="],
+    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.3.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^3.22.0" } }, "sha512-NSgriCHYDFgfgmPrbWGAna4pCeZ0jLbTRFu0l9L6dqiKp8nvQrEBjQCayiymOTK2YEvDXMQplakGzwX1sZ4awg=="],
 
     "@flux-control/modbus-schema": ["@flux-control/modbus-schema@0.1.2", "", { "peerDependencies": { "effect": "^3.21.4" } }, "sha512-IjmKKNvsew0TbJ6J1rneue+sufb/37fVIUTLTYwq9sMkKl18AoGGU1cL3hNqVO79YMKcW7rvqtwtcejAtYw2pw=="],
 

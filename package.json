@@ -45,7 +45,7 @@
     "version": "changeset version"
   },
   "dependencies": {
-    "@flux-control/effect-modbus-rs": "^0.2.0",
+    "@flux-control/effect-modbus-rs": "^0.3.0",
     "@flux-control/modbus-schema": "^0.1.2"
   },
   "devDependencies": {

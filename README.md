@@ -50,6 +50,23 @@ program.pipe(
 
 `TecoInverterService` is a scoped `Effect.Service` that manages a Modbus client pool per device. Provide it with `Effect.provide` alongside a transport layer (`SerialTransportService` from `@flux-control/effect-modbus-rs`).
 
+### Resilience
+
+Retry and reconnection are owned by the transport, not by this service. Configure them where the transport layer is built and they apply to every inverter operation — there is no per-call wiring to do here:
+
+```ts
+SerialTransportService.fromRtu({
+  portPath: '/dev/ttyUSB0',
+  baudRate: 19200,
+  retry: RetryPolicies.serial(), // backoff + jitter, tuned for a serial bus
+  reconnect: {}, // supervised reconnect + circuit breaker
+});
+```
+
+With `reconnect` enabled, operations attempted while the link is down fail with `ModbusCircuitOpenError` rather than queueing onto a dead bus. It is a member of the `ModbusError` union, so it can surface from any `read()` or `update()` on this service — code that matches exhaustively on `_tag` should handle it. Defaults are unchanged: with neither option set, operations remain single-shot.
+
+See the [`@flux-control/effect-modbus-rs` docs](https://github.com/flux-control-solutions/Effect-modbus-rs) for the full policy templates.
+
 ### Command registers (write)
 
 | Method                        | Register | Description                      |
