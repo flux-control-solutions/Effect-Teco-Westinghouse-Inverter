@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { Effect, ParseResult, Schema } from 'effect';
+import { Effect, Schema } from 'effect';
 
 import {
   decodeCommandWord,
@@ -53,19 +53,17 @@ import {
 // return `any` from helpers so `.toBe()` comparisons don't
 // fire branded-type overload errors.
 const decodeOk = (
-  decoder: (u: unknown) => Effect.Effect<any, ParseResult.ParseError>,
+  decoder: (u: unknown) => Effect.Effect<any, Schema.SchemaError>,
   input: unknown,
 ): any => Effect.runSync(decoder(input));
 
-const encodeOk = (
-  encoder: (a: any) => Effect.Effect<any, ParseResult.ParseError>,
-  value: any,
-): any => Effect.runSync(encoder(value));
+const encodeOk = (encoder: (a: any) => Effect.Effect<any, Schema.SchemaError>, value: any): any =>
+  Effect.runSync(encoder(value));
 
 const encodeFail = (
-  encoder: (a: any) => Effect.Effect<any, ParseResult.ParseError>,
+  encoder: (a: any) => Effect.Effect<any, Schema.SchemaError>,
   value: any,
-): ParseResult.ParseError => Effect.runSync(Effect.flip(encoder(value)));
+): Schema.SchemaError => Effect.runSync(Effect.flip(encoder(value)));
 
 // ---------------------------------------------------------------------------
 // UInt16
@@ -73,29 +71,29 @@ const encodeFail = (
 
 describe('UInt16', () => {
   test('accepts valid values', () => {
-    expect(Effect.runSync(Schema.decodeUnknown(UInt16)(0))).toBe(0 as any);
-    expect(Effect.runSync(Schema.decodeUnknown(UInt16)(65535))).toBe(65535 as any);
-    expect(Effect.runSync(Schema.decodeUnknown(UInt16)(32768))).toBe(32768 as any);
+    expect(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(0))).toBe(0 as any);
+    expect(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(65535))).toBe(65535 as any);
+    expect(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(32768))).toBe(32768 as any);
   });
 
   test('rejects negative values', () => {
-    const err = Effect.runSync(Effect.flip(Schema.decodeUnknown(UInt16)(-1)));
-    expect(err).toBeInstanceOf(ParseResult.ParseError);
+    const err = Effect.runSync(Effect.flip(Schema.decodeUnknownEffect(UInt16)(-1)));
+    expect(err).toBeInstanceOf(Schema.SchemaError);
   });
 
   test('rejects non-integers', () => {
-    const err = Effect.runSync(Effect.flip(Schema.decodeUnknown(UInt16)(1.5)));
-    expect(err).toBeInstanceOf(ParseResult.ParseError);
+    const err = Effect.runSync(Effect.flip(Schema.decodeUnknownEffect(UInt16)(1.5)));
+    expect(err).toBeInstanceOf(Schema.SchemaError);
   });
 
   test('rejects values over 65535', () => {
-    const err = Effect.runSync(Effect.flip(Schema.decodeUnknown(UInt16)(70000)));
-    expect(err).toBeInstanceOf(ParseResult.ParseError);
+    const err = Effect.runSync(Effect.flip(Schema.decodeUnknownEffect(UInt16)(70000)));
+    expect(err).toBeInstanceOf(Schema.SchemaError);
   });
 
   test('encodes values within range', () => {
-    expect(Effect.runSync(Schema.encode(UInt16)(0 as any))).toBe(0 as any);
-    expect(Effect.runSync(Schema.encode(UInt16)(65535 as any))).toBe(65535 as any);
+    expect(Effect.runSync(Schema.encodeEffect(UInt16)(0 as any))).toBe(0 as any);
+    expect(Effect.runSync(Schema.encodeEffect(UInt16)(65535 as any))).toBe(65535 as any);
   });
 });
 
@@ -591,8 +589,8 @@ describe('StateMonitorSchema', () => {
   });
 
   test('encode fails with read-only error', () => {
-    const decoder = Schema.decodeUnknown(StateMonitorSchema);
-    const encoder = Schema.encode(StateMonitorSchema);
+    const decoder = Schema.decodeUnknownEffect(StateMonitorSchema);
+    const encoder = Schema.encodeEffect(StateMonitorSchema);
     const flags = decodeOk(decoder, 0);
     const err = encodeFail(encoder, flags);
     expect(err.message || err.toString()).toContain('read only');
@@ -622,7 +620,7 @@ describe('ErrorDescriptionMonitorSchema', () => {
   });
 
   test('encode fails with read-only error', () => {
-    const encoder = Schema.encode(ErrorDescriptionMonitorSchema);
+    const encoder = Schema.encodeEffect(ErrorDescriptionMonitorSchema);
     const err = encodeFail(encoder, 'test' as any);
     expect(err.message || err.toString()).toContain('read only');
   });

@@ -6,7 +6,8 @@ Bidirectional schema transformers for Teco/Westinghouse A510 inverter Modbus par
 
 - **Runtime**: Bun only — never use Node, npm, pnpm, yarn, or vite.
 - **Language**: TypeScript 6 (ESNext, `verbatimModuleSyntax`, bundler resolution, `module: "Preserve"`).
-- **Core libs**: `effect` (^3.21.4), `@flux-control/effect-modbus-rs` (^0.3.0), `@flux-control/modbus-schema` (^0.1.2) — both resolved from npm, not linked.
+- **Core libs**: `effect` (^4.0.0-rc.109), `@flux-control/effect-modbus-rs`, `@flux-control/modbus-schema`. Effect v4 is still a release candidate.
+- **Sibling packages**: currently resolved via `file:` links to the local `v4` branches. Swap back to published semver ranges before release.
 - **LSP**: `@effect/language-service` plugin in `tsconfig.json` `compilerOptions.plugins`.
 - **License**: GPL-3.0.
 
@@ -28,7 +29,7 @@ No build step required for development — `noEmit` is on; Bun runs `.ts` direct
 index.ts                     — Re-exports all public API from src/
 src/
   Registers.ts               — Modbus register address enums (COMMAND_REGISTERS, MONITOR_REGISTERS, GROUP_*)
-  TecoInverterService.ts     — Scoped Effect.Service for A510 communication
+  TecoInverterService.ts     — Scoped Context.Service for A510 communication
   errors.ts                  — Error utilities (readOnlyEncodeFailure)
   schemas.ts                 — Command/monitor wire schemas + formatters
   utils.ts                   — Bit helpers (bit)
@@ -45,7 +46,7 @@ examples/
 
 ## Architecture
 
-- **`TecoInverterService`** — A scoped `Effect.Service` that wraps a `SerialTransportService`. Clients are created per `deviceId` via `transport.withClient(deviceId)` and cached in a `Set<number>`.
+- **`TecoInverterService`** — A scoped `Context.Service` that wraps a `SerialTransportService`. Clients are created per `deviceId` via `transport.withClient(deviceId)` and cached in a `Set<number>`.
 - **Command registers** — Use read-modify-write semantics to update individual bitfields without affecting unchanged bits.
 - **Monitor registers** — Read-only; attempts to encode a monitor value fail with `readOnlyEncodeFailure`.
 - **Parameter groups** — Accessed via `inverter.parameters.group##`. Each parameter callable returns `{ read(), update(value) }` for a given `deviceId`.

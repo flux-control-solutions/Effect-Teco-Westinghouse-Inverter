@@ -4,7 +4,7 @@
 
 For the complete API reference, see the [GitHub Pages documentation](https://flux-control-solutions.github.io/Effect-Teco-Westinghouse-Inverter/).
 
-`TecoInverterService` is a scoped `Effect.Service` that:
+`TecoInverterService` is a scoped `Context.Service` that:
 
 - **Manages the transport** — Opens RTU or ASCII connections via `@flux-control/effect-modbus-rs` and caches a client per device ID.
 - **Exposes operations** — Typed command registers (start/stop, frequency, torque, analog/digital outputs) with read-modify-write semantics for bitfield registers.
@@ -37,7 +37,7 @@ const program = Effect.gen(function* () {
 program.pipe(
   Effect.provide(
     Layer.provideMerge(
-      TecoInverterService.Default(true),
+      TecoInverterService.make(true),
       SerialTransportService.fromRtu({ portPath: '/dev/ttyUSB0', baudRate: 19200 }),
     ),
   ),
@@ -48,7 +48,7 @@ program.pipe(
 
 ## Service
 
-`TecoInverterService` is a scoped `Effect.Service` that manages a Modbus client pool per device. Provide it with `Effect.provide` alongside a transport layer (`SerialTransportService` from `@flux-control/effect-modbus-rs`).
+`TecoInverterService` is a scoped `Context.Service` that manages a Modbus client pool per device. Provide it with `Effect.provide` alongside a transport layer (`SerialTransportService` from `@flux-control/effect-modbus-rs`).
 
 ### Resilience
 
@@ -168,7 +168,7 @@ const mockLayer = SerialTransportService.makeMockTransport([TecoInverterService.
 });
 
 program.pipe(
-  Effect.provide(Layer.provideMerge(TecoInverterService.Default('Rtu'), mockLayer)),
+  Effect.provide(Layer.provideMerge(TecoInverterService.make('Rtu'), mockLayer)),
   Effect.scoped,
   Effect.runPromise,
 );
@@ -229,7 +229,7 @@ Command and monitor registers are TypeScript enums in `src/Registers.ts`:
 index.ts                     — Re-exports all public API
 src/
   Registers.ts               — Modbus register address enums
-  TecoInverterService.ts     — Scoped Effect.Service for A510 communication
+  TecoInverterService.ts     — Scoped Context.Service for A510 communication
   errors.ts                  — Error utilities (readOnlyEncodeFailure)
   schemas.ts                 — Command/monitor wire schemas + formatters
   utils.ts                   — Bit helpers (bit)

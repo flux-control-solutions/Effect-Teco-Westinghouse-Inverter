@@ -37,53 +37,46 @@ export { Int16, UInt16 } from '@flux-control/modbus-schema';
 // ── Domain brands (device-side) ──────────────────────────
 
 export type FrequencyHz = number & Brand.Brand<'FrequencyHz'>;
-export const FrequencyHz = Schema.Number.pipe(
-  Schema.nonNegative(),
-  Schema.lessThanOrEqualTo(600),
-  Schema.brand('FrequencyHz'),
-);
+export const FrequencyHz = Schema.Number.check(
+  Schema.isGreaterThanOrEqualTo(0),
+  Schema.isLessThanOrEqualTo(600),
+).pipe(Schema.brand('FrequencyHz'));
 
 export type TorquePercent = number & Brand.Brand<'TorquePercent'>;
-export const TorquePercent = Schema.Number.pipe(
-  Schema.greaterThanOrEqualTo(-100),
-  Schema.lessThanOrEqualTo(100),
-  Schema.brand('TorquePercent'),
-);
+export const TorquePercent = Schema.Number.check(
+  Schema.isGreaterThanOrEqualTo(-100),
+  Schema.isLessThanOrEqualTo(100),
+).pipe(Schema.brand('TorquePercent'));
 
 export type SpeedLimitPercent = number & Brand.Brand<'SpeedLimitPercent'>;
-export const SpeedLimitPercent = Schema.Number.pipe(
-  Schema.greaterThanOrEqualTo(-120),
-  Schema.lessThanOrEqualTo(120),
-  Schema.brand('SpeedLimitPercent'),
-);
+export const SpeedLimitPercent = Schema.Number.check(
+  Schema.isGreaterThanOrEqualTo(-120),
+  Schema.isLessThanOrEqualTo(120),
+).pipe(Schema.brand('SpeedLimitPercent'));
 
 export type Voltage = number & Brand.Brand<'Voltage'>;
-export const Voltage = Schema.Number.pipe(
-  Schema.nonNegative(),
-  Schema.lessThanOrEqualTo(10),
-  Schema.brand('Voltage'),
-);
+export const Voltage = Schema.Number.check(
+  Schema.isGreaterThanOrEqualTo(0),
+  Schema.isLessThanOrEqualTo(10),
+).pipe(Schema.brand('Voltage'));
 
 export type DCBusVoltage = number & Brand.Brand<'DCBusVoltage'>;
-export const DCBusVoltage = Schema.Number.pipe(
-  Schema.nonNegative(),
-  Schema.lessThanOrEqualTo(1000),
-  Schema.brand('DCBusVoltage'),
-);
+export const DCBusVoltage = Schema.Number.check(
+  Schema.isGreaterThanOrEqualTo(0),
+  Schema.isLessThanOrEqualTo(1000),
+).pipe(Schema.brand('DCBusVoltage'));
 
 export type CurrentAmps = number & Brand.Brand<'CurrentAmps'>;
-export const CurrentAmps = Schema.Number.pipe(
-  Schema.nonNegative(),
-  Schema.lessThanOrEqualTo(6553.5),
-  Schema.brand('CurrentAmps'),
-);
+export const CurrentAmps = Schema.Number.check(
+  Schema.isGreaterThanOrEqualTo(0),
+  Schema.isLessThanOrEqualTo(6553.5),
+).pipe(Schema.brand('CurrentAmps'));
 
 export type AnalogInputPercent = number & Brand.Brand<'AnalogInputPercent'>;
-export const AnalogInputPercent = Schema.Number.pipe(
-  Schema.nonNegative(),
-  Schema.lessThanOrEqualTo(100),
-  Schema.brand('AnalogInputPercent'),
-);
+export const AnalogInputPercent = Schema.Number.check(
+  Schema.isGreaterThanOrEqualTo(0),
+  Schema.isLessThanOrEqualTo(100),
+).pipe(Schema.brand('AnalogInputPercent'));
 
 export type ErrorDescriptionMonitor = string & Brand.Brand<'ErrorDescriptionMonitor'>;
 export const ErrorDescriptionMonitor = Schema.String.pipe(Schema.brand('ErrorDescriptionMonitor'));
@@ -204,7 +197,7 @@ export const commandWord = {
 //  FREQUENCY COMMAND (Register 0x2502)
 // ========================================================================
 
-const _frequencyCommandEntry = makeScaledParam<FrequencyHz>(
+const _frequencyCommandEntry = makeScaledParam(
   0x2502,
   0.01,
   meta('Frequency Command', 'Hz', '0.00–599.00', '0.00'),
@@ -219,7 +212,7 @@ export const FrequencyCommandSchema = _frequencyCommandEntry.schema;
 //  TORQUE COMMAND (Register 0x2503)
 // ========================================================================
 
-const _torqueCommandEntry = makeSignedScaledParam<TorquePercent>(
+const _torqueCommandEntry = makeSignedScaledParam(
   0x2503,
   1 / 81.92,
   meta('Torque Command', '%', '–100.0–100.0', '0.0'),
@@ -234,7 +227,7 @@ export const TorqueCommandSchema = _torqueCommandEntry.schema;
 //  SPEED LIMIT COMMAND (Register 0x2504)
 // ========================================================================
 
-const _speedLimitCommandEntry = makeSignedScaledParam<SpeedLimitPercent>(
+const _speedLimitCommandEntry = makeSignedScaledParam(
   0x2504,
   1,
   meta('Speed Limit Command', '%', '–120–120', '0'),
@@ -249,7 +242,7 @@ export const SpeedLimitCommandSchema = _speedLimitCommandEntry.schema;
 //  ANALOG OUTPUT COMMANDS (Registers 0x2505-0x2506)
 // ========================================================================
 
-const _analogOut1CommandEntry = makeScaledParam<Voltage>(
+const _analogOut1CommandEntry = makeScaledParam(
   0x2505,
   0.01,
   meta('Analog Out 1 Command', 'V', '0.00–10.00', '0.00'),
@@ -260,7 +253,7 @@ export const encodeAnalogOut1Command = _analogOut1CommandEntry.encode;
 export const formattedAnalogOut1Command = _analogOut1CommandEntry.formatted;
 export const AnalogOut1CommandSchema = _analogOut1CommandEntry.schema;
 
-const _analogOut2CommandEntry = makeScaledParam<Voltage>(
+const _analogOut2CommandEntry = makeScaledParam(
   0x2506,
   0.01,
   meta('Analog Out 2 Command', 'V', '0.00–10.00', '0.00'),
@@ -424,7 +417,7 @@ const errorDescriptionLabels: Record<number, string> = {
   49: 'RUN',
 };
 
-const _errorDescriptionMonitorEntry = makeLookupParam<ErrorDescriptionMonitor>(
+const _errorDescriptionMonitorEntry = makeLookupParam(
   0x2521,
   errorDescriptionLabels as Record<number, ErrorDescriptionMonitor>,
   (raw) => `Unknown (${raw})` as ErrorDescriptionMonitor,
@@ -491,7 +484,7 @@ export const formattedDigitalInStateMonitor = _digitalInParam.formatted;
 //  FREQUENCY COMMAND MONITOR (Register 0x2523)
 // ========================================================================
 
-const _frequencyCommandMonitorEntry = makeScaledParam<FrequencyHz>(
+const _frequencyCommandMonitorEntry = makeScaledParam(
   0x2523,
   0.01,
   meta('Frequency Command Monitor', 'Hz', '0.00–599.00', '0.00'),
@@ -505,7 +498,7 @@ export const FrequencyCommandMonitorSchema = _frequencyCommandMonitorEntry.schem
 //  OUTPUT FREQUENCY MONITOR (Register 0x2524)
 // ========================================================================
 
-const _outputFrequencyMonitorEntry = makeScaledParam<FrequencyHz>(
+const _outputFrequencyMonitorEntry = makeScaledParam(
   0x2524,
   0.01,
   meta('Output Frequency Monitor', 'Hz', '0.00–599.00', '0.00'),
@@ -519,7 +512,7 @@ export const OutputFrequencyMonitorSchema = _outputFrequencyMonitorEntry.schema;
 //  DC BUS VOLTAGE COMMAND MONITOR (Register 0x2526)
 // ========================================================================
 
-const _dcBusVoltageCommandMonitorEntry = makeScaledParam<DCBusVoltage>(
+const _dcBusVoltageCommandMonitorEntry = makeScaledParam(
   0x2526,
   0.1,
   meta('DC Bus Voltage Monitor', 'V', '0.0–1000.0', '0.0'),
@@ -533,7 +526,7 @@ export const DCBusVoltageCommandMonitorSchema = _dcBusVoltageCommandMonitorEntry
 //  OUTPUT CURRENT MONITOR (Register 0x2527)
 // ========================================================================
 
-const _outputCurrentMonitorEntry = makeScaledParam<CurrentAmps>(
+const _outputCurrentMonitorEntry = makeScaledParam(
   0x2527,
   0.1,
   meta('Output Current Monitor', 'A', '0.0–6553.5', '0.0'),
@@ -631,7 +624,7 @@ const warningDescriptionLabels: Record<number, string> = {
   80: 'FBLSS',
 };
 
-const _warningDescriptionMonitorEntry = makeLookupParam<WarningDescriptionMonitor>(
+const _warningDescriptionMonitorEntry = makeLookupParam(
   0x2528,
   warningDescriptionLabels as Record<number, WarningDescriptionMonitor>,
   (raw) => `Unknown warning (${raw})` as WarningDescriptionMonitor,
@@ -673,7 +666,7 @@ export const formattedDigitalOutStateMonitor = _digitalOutStateParam.formatted;
 //  ANALOG OUT 1 MONITOR (Register 0x252A)
 // ========================================================================
 
-const _analogOut1MonitorEntry = makeScaledParam<Voltage>(
+const _analogOut1MonitorEntry = makeScaledParam(
   0x252a,
   0.01,
   meta('Analog Out 1 Monitor', 'V', '0.00–10.00', '0.00'),
@@ -687,7 +680,7 @@ export const AnalogOut1MonitorSchema = _analogOut1MonitorEntry.schema;
 //  ANALOG OUT 2 MONITOR (Register 0x252B)
 // ========================================================================
 
-const _analogOut2MonitorEntry = makeScaledParam<Voltage>(
+const _analogOut2MonitorEntry = makeScaledParam(
   0x252b,
   0.01,
   meta('Analog Out 2 Monitor', 'V', '0.00–10.00', '0.00'),
@@ -701,7 +694,7 @@ export const AnalogOut2MonitorSchema = _analogOut2MonitorEntry.schema;
 //  ANALOG IN 1 MONITOR (Register 0x252C)
 // ========================================================================
 
-const _analogIn1MonitorEntry = makeScaledParam<AnalogInputPercent>(
+const _analogIn1MonitorEntry = makeScaledParam(
   0x252c,
   0.1,
   meta('Analog In 1 Monitor', '%', '0.0–100.0', '0.0'),
@@ -715,7 +708,7 @@ export const AnalogIn1MonitorSchema = _analogIn1MonitorEntry.schema;
 //  ANALOG IN 2 MONITOR (Register 0x252D)
 // ========================================================================
 
-const _analogIn2MonitorEntry = makeScaledParam<AnalogInputPercent>(
+const _analogIn2MonitorEntry = makeScaledParam(
   0x252d,
   0.1,
   meta('Analog In 2 Monitor', '%', '0.0–100.0', '0.0'),
