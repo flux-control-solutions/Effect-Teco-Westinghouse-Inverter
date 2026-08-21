@@ -45,8 +45,8 @@
     "version": "changeset version"
   },
   "dependencies": {
-    "@flux-control/effect-modbus-rs": "file:../Effect-modbus-rs",
-    "@flux-control/modbus-schema": "file:../Modbus-Schema"
+    "@flux-control/effect-modbus-rs": "workspace:*",
+    "@flux-control/modbus-schema": "workspace:*"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
