@@ -10,7 +10,7 @@
 
 import { BunRuntime } from '@effect/platform-bun';
 import { SerialTransportService } from '@flux-control/effect-modbus-rs';
-import { Console, Effect, Layer, Logger, LogLevel } from 'effect';
+import { Console, Effect, Layer, References } from 'effect';
 
 import {
   formattedCommandWord,
@@ -47,7 +47,7 @@ const program = Effect.gen(function* () {
   yield* Console.log(`  State Monitor:      ${formattedStateMonitor(stateMon)}`);
 });
 
-const TecoLayer = TecoInverterService.Default(true);
+const TecoLayer = TecoInverterService.make(true);
 const mockSerialLayer = SerialTransportService.makeMockTransport([
   TecoInverterService.mockDevice(1),
   TecoInverterService.mockDevice(2),
@@ -63,7 +63,6 @@ const layerLive = Layer.provideMerge(TecoLayer, mockSerialLayer);
 
 program.pipe(
   Effect.provide(layerLive),
-  // @ts-ignore
-  Logger.withMinimumLogLevel(LogLevel.Debug),
+  Effect.provideService(References.MinimumLogLevel, 'Debug'),
   BunRuntime.runMain,
 );

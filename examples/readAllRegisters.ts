@@ -9,7 +9,7 @@
 
 import { BunRuntime } from '@effect/platform-bun';
 import { SerialTransportService } from '@flux-control/effect-modbus-rs';
-import { Console, Effect, Layer, Logger, LogLevel } from 'effect';
+import { Console, Effect, Layer, References } from 'effect';
 
 import {
   formattedCommandWord,
@@ -119,7 +119,7 @@ const program = Effect.gen(function* () {
   yield* Console.log(`  A510 Check:             ${formattedA510CheckMonitor(a510Mon)}`);
 });
 
-const TecoLayer = TecoInverterService.Default(true);
+const TecoLayer = TecoInverterService.make(true);
 const SerialLayer = SerialTransportService.fromRtu({
   portPath: '/dev/tty.usbserial-A10OFLK2',
   baudRate: 19200,
@@ -132,7 +132,6 @@ const layerLive = Layer.provideMerge(TecoLayer, SerialLayer);
 
 program.pipe(
   Effect.provide(layerLive),
-  // @ts-ignore
-  Logger.withMinimumLogLevel(LogLevel.Debug),
+  Effect.provideService(References.MinimumLogLevel, 'Debug'),
   BunRuntime.runMain,
 );
