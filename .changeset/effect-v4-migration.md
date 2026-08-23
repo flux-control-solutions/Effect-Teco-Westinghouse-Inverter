@@ -10,10 +10,9 @@ must move to v4 in the same step. Effect v4 is still a release candidate.
 **Peer dependency:** `effect` is now `^4.0.0-rc.109` (was `^3.21.4`).
 `@effect/platform-bun` moves to the matching `^4.0.0-rc.109`.
 
-**Sibling packages must be on their v4 releases.** This branch currently resolves
-`@flux-control/modbus-schema` and `@flux-control/effect-modbus-rs` through
-`file:` links to their local `v4` branches; those must be swapped back to
-published semver ranges before release.
+**Sibling packages must be on their v4 releases.** This release resolves
+`@flux-control/effect-modbus-rs` `^0.4.0` and `@flux-control/modbus-schema`
+`^0.2.0`, the first published versions of each built for Effect v4.
 
 **`TecoInverterService` is a `Context.Service`.** v4 does not auto-generate a
 layer from the service constructor, so the layer is now built explicitly.
