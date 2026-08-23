@@ -1,6 +1,6 @@
 {
   "name": "@flux-control/effect-teco-westinghouse-inverter",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Effect First Typesafe communication library for the Teco WestingHouse A510 Inverter Family",
   "license": "GPL-3.0",
   "repository": {
