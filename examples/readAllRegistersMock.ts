@@ -47,7 +47,7 @@ const program = Effect.gen(function* () {
   yield* Console.log(`  State Monitor:      ${formattedStateMonitor(stateMon)}`);
 });
 
-const TecoLayer = TecoInverterService.make(true);
+const TecoLayer = TecoInverterService.make();
 const mockSerialLayer = SerialTransportService.makeMockTransport([
   TecoInverterService.mockDevice(1),
   TecoInverterService.mockDevice(2),

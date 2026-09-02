@@ -37,7 +37,7 @@ const program = Effect.gen(function* () {
 program.pipe(
   Effect.provide(
     Layer.provideMerge(
-      TecoInverterService.make(true),
+      TecoInverterService.make(),
       SerialTransportService.fromRtu({ portPath: '/dev/ttyUSB0', baudRate: 19200 }),
     ),
   ),
@@ -66,6 +66,48 @@ SerialTransportService.fromRtu({
 With `reconnect` enabled, operations attempted while the link is down fail with `ModbusCircuitOpenError` rather than queueing onto a dead bus. It is a member of the `ModbusError` union, so it can surface from any `read()` or `update()` on this service — code that matches exhaustively on `_tag` should handle it. Defaults are unchanged: with neither option set, operations remain single-shot.
 
 See the [`@flux-control/effect-modbus-rs` docs](https://github.com/flux-control-solutions/Effect-modbus-rs) for the full policy templates.
+
+### Transaction batching
+
+Every accessor names one register, so on its own each one costs a transaction — and on a half-duplex bus the round trip, not the payload, is the cost. Reading all 49 parameters of Group 00 that way costs 49 of them.
+
+Given a read window, the transport collects the reads that are in flight at the same moment and packs them into the fewest spans that cover them. Group 00 is three contiguous runs of registers, so the same 49 parameters cost three transactions:
+
+```ts
+const layer = Layer.provideMerge(
+  TecoInverterService.make({ reads: { window: '5 millis' } }),
+  SerialTransportService.fromRtu({ portPath: '/dev/ttyUSB0', baudRate: 19200 }),
+);
+
+const readGroup00 = Effect.gen(function* () {
+  const inverter = yield* TecoInverterService;
+  const params = Object.values(inverter.parameters.group00);
+  return yield* Effect.forEach(params, (param) => param(1).read(), {
+    concurrency: 'unbounded',
+  });
+});
+```
+
+Both halves are load-bearing. The window holds the first read long enough for the rest to arrive; `concurrency: 'unbounded'` is what puts them in flight at the same moment. Reads awaited one after another never overlap, whatever the window is, and each one pays the window in latency.
+
+The call sites do not change shape. `inverter.parameters.group00['00-01'](1).read()` reads the same way it always did; what changes is what it costs.
+
+| Option           | Default     | Effect                                                                         |
+| ---------------- | ----------- | ------------------------------------------------------------------------------ |
+| `reads.window`   | `0`         | How long reads are collected before the spans are issued                       |
+| `reads.maxGap`   | `0`         | Unrequested registers the planner may read to join two spans into one          |
+| `writes.window`  | `0`         | How long a write is held so neighbouring writes travel with it                 |
+| `writes.maxHold` | `4x window` | Ceiling on the total hold, so a fast-commanded register still reaches the wire |
+| `writes.cache`   | `false`     | Drop a write whose value the drive is believed to already hold                 |
+| `safeShutdown`   | `true`      | Stop every drive this service spoke to when the scope closes                   |
+
+Every default leaves timing as it was before batching existed. The windows are opt-in because the right value is a property of the bus rather than of the drive: a useful size is on the order of one transaction, which is roughly 5 ms to 15 ms for a short frame at 19200 baud — arithmetic rather than a measurement. Time one on the segment you are on before settling on a value.
+
+Three behaviours are worth knowing before turning any of this on:
+
+- **`reads.maxGap` can fail a whole span.** Group 00's runs are separated by gaps of 2 and 7 registers, so a tolerance of 7 reads it in a single transaction. But a drive may answer `ILLEGAL_DATA_ADDRESS` for a register it does not implement, and the exception takes down the span, including the addresses that would have answered. Read one span across a known gap on the drive itself before raising this. The value covers the whole unit rather than one group, because a unit has one batch.
+- **`writes.cache` is off because an A510 has a keypad.** The record covers what this process wrote. A parameter changed at the panel leaves it describing a value the drive no longer holds, after which it suppresses exactly the write that would restore it. Turn it on for a drive with no local operator, where it saves a write per unchanged register. The stop issued at shutdown is never suppressed — it clears the record first.
+- **`update()` does not wait out the read window.** A read-modify-write pair holds a race between the read and the write, and a window would widen it by its own length, so the read inside `update()` is the immediate one. Nothing is given up: it still joins a batch that is already open.
 
 ### Command registers (write)
 
@@ -168,7 +210,7 @@ const mockLayer = SerialTransportService.makeMockTransport([TecoInverterService.
 });
 
 program.pipe(
-  Effect.provide(Layer.provideMerge(TecoInverterService.make('Rtu'), mockLayer)),
+  Effect.provide(Layer.provideMerge(TecoInverterService.make(), mockLayer)),
   Effect.scoped,
   Effect.runPromise,
 );

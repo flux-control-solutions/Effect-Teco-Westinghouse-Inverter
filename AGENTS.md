@@ -30,6 +30,7 @@ index.ts                     — Re-exports all public API from src/
 src/
   Registers.ts               — Modbus register address enums (COMMAND_REGISTERS, MONITOR_REGISTERS, GROUP_*)
   TecoInverterService.ts     — Scoped Context.Service for A510 communication
+  TecoInverterService.test.ts — Batching, read-modify-write, and safe-shutdown behaviour
   errors.ts                  — Error utilities (readOnlyEncodeFailure)
   schemas.ts                 — Command/monitor wire schemas + formatters
   utils.ts                   — Bit helpers (bit)
@@ -46,8 +47,10 @@ examples/
 
 ## Architecture
 
-- **`TecoInverterService`** — A scoped `Context.Service` that wraps a `SerialTransportService`. Clients are created per `deviceId` via `transport.withClient(deviceId)` and cached in a `Set<number>`.
-- **Command registers** — Use read-modify-write semantics to update individual bitfields without affecting unchanged bits.
+- **`TecoInverterService`** — A scoped `Context.Service` that wraps a `SerialTransportService`. Clients are created per `deviceId` via `transport.withBatchingClient(deviceId, options)`, which the transport keeps one of per unit. The transport also tracks which units were spoken to, so this package holds no device set of its own.
+- **Transaction batching** — `TecoInverterOptions` is one configuration, built once in `makeTecoInverter` and shared by every drive on the bus, because two batches on one unit would coalesce neither and the transport rejects a second request for a unit that asks for something else. Every default (`reads.window`, `writes.window`, `reads.maxGap`, `writes.cache`) leaves timing as it was before batching existed; see the README for why `maxGap` and the write cache are off rather than merely conservative.
+- **Command registers** — Use read-modify-write semantics to update individual bitfields without affecting unchanged bits. The read inside `update()` is `readNow`, not the collected read, so a window does not widen the race between the read and the write.
+- **Safe shutdown** — Registered through `transport.onShutdownPerUnit`. What a safe state _is_ (a stopped motor) belongs to this package; the transport supplies only the hook and the unit list. The stop clears the write record first, so a safety action is never suppressed by the cache.
 - **Monitor registers** — Read-only; attempts to encode a monitor value fail with `readOnlyEncodeFailure`.
 - **Parameter groups** — Accessed via `inverter.parameters.group##`. Each parameter callable returns `{ read(), update(value) }` for a given `deviceId`.
 - **Schema engine** — The device-agnostic factories (`makeParam`, `makeScaledParam`, etc.) now live in the `modbus-schema` package. Parameter group files import `ParamKind` and `ParamConfig` from `modbus-schema` directly.

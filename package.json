@@ -40,13 +40,13 @@
     "lock": "bash tools/refresh-lockfile.sh",
     "prepare": "husky",
     "release": "changeset publish",
-    "test": "bun test src/schemas.test.ts src/parameters/",
-    "test:coverage": "bun test --coverage src/schemas.test.ts src/parameters/",
+    "test": "bun test src/schemas.test.ts src/TecoInverterService.test.ts src/parameters/",
+    "test:coverage": "bun test --coverage src/schemas.test.ts src/TecoInverterService.test.ts src/parameters/",
     "typecheck": "tsc --noEmit",
     "version": "changeset version"
   },
   "dependencies": {
-    "@flux-control/effect-modbus-rs": "^0.4.0",
+    "@flux-control/effect-modbus-rs": "^0.5.0",
     "@flux-control/modbus-schema": "^0.2.0"
   },
   "devDependencies": {
