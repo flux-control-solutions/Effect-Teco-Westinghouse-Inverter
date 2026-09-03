@@ -66,7 +66,7 @@ import {
   ParamKind,
   fromConfig,
 } from '@flux-control/modbus-schema';
-import { Context, type Duration, Effect, Layer, Record, Schema } from 'effect';
+import { Context, Duration, Effect, Exit, Layer, Record, Schema, ScopedCache } from 'effect';
 
 import * as Parameters from './parameters';
 import type { GroupParamOps, ParamCallableOfEntry } from './parameters/operations';
@@ -232,7 +232,7 @@ export interface TecoInverterOptions {
  */
 const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptions = {}) {
   const transport = yield* SerialTransportService;
-  const inverterDeviceIds = new Set<number>();
+  const safeShutdown = options.safeShutdown ?? true;
 
   /**
    * One configuration, built once and shared by every drive on this bus.
@@ -255,16 +255,75 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   };
 
   /**
-   * The batching client for one drive.
+   * Brings one drive to its safe state, through a client already held: the
+   * motor stopped, every other bit of the command word left as it was.
    *
-   * This is also what records the drive as owned by this service, which is what
-   * its shutdown hook walks. The transport-wide unit set can include other
-   * kinds of device on the same bus.
+   * What a safe state *is* belongs to this package. That it is a drive rather
+   * than some other device on the same bus is not asked at shutdown — only a
+   * drive ever had a client built for it here.
    */
+  const stopWith = (client: BatchingModbusClient, deviceId: number) =>
+    Effect.gen(function* () {
+      // A stop must reach the wire even when the write cache believes the
+      // register already holds it. That belief covers what this process wrote,
+      // and a drive started from its keypad holds something the record never
+      // saw.
+      client.cache?.invalidate(deviceId);
+      const current = yield* S.decodeCommandWord(
+        yield* client.readNow(COMMAND_REGISTERS.OPERATION_COMMAND),
+      );
+      const stopped = S.mergeCommandWordPatch(current, new S.CommandWordPatch({ run: false }));
+      yield* client.writeNow({
+        address: COMMAND_REGISTERS.OPERATION_COMMAND,
+        value: yield* S.encodeCommandWord(stopped),
+      });
+    });
+
+  /**
+   * One batching client per drive, declared on first use and held for the life
+   * of the service.
+   *
+   * A unit has one batch, so the transport takes one declaration per unit and
+   * refuses a second. Declaring here rather than at each accessor is what makes
+   * that true of this service: callers that arrive together on one drive await
+   * the same declaration instead of racing to make their own.
+   */
+  const clients = yield* ScopedCache.makeWith({
+    // The highest unit ID an RTU segment can address. No bus can reach this
+    // capacity, so no drive is evicted — and stopped — while it is still in use.
+    capacity: 247,
+    // A declaration that failed describes the link at one moment, not the
+    // drive. Holding that result would make a momentary drop permanent for
+    // every later operation on that drive.
+    timeToLive: (exit) => (Exit.isSuccess(exit) ? Duration.infinity : Duration.zero),
+    lookup: (deviceId: number) =>
+      Effect.acquireRelease(
+        transport.withBatchingClient(deviceId, batching),
+        // A stopped motor is the safe state of this device, and this runs while
+        // the bus is still open. Each drive carries its own finalizer, so a
+        // drive that cannot be reached costs only itself: the error is logged
+        // and every other drive still gets its turn.
+        //
+        // The client is the one this entry holds, never a fresh lookup. A
+        // lookup on a closing cache is interrupted, which would leave the motor
+        // running.
+        (client) =>
+          safeShutdown
+            ? stopWith(client, deviceId).pipe(
+                Effect.catch((err) =>
+                  Effect.logWarning(
+                    `Error while stopping the drive on unit ${deviceId} on exit: `,
+                    err,
+                  ),
+                ),
+              )
+            : Effect.void,
+      ),
+  });
+
+  /** The batching client for one drive, declared on the first call for it. */
   const clientFor = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
-    Effect.tap(transport.withBatchingClient(deviceId, batching), () =>
-      Effect.sync(() => inverterDeviceIds.add(deviceId)),
-    );
+    ScopedCache.get(clients, deviceId);
 
   const readHolding = <A, E, R>(
     address: number,
@@ -433,44 +492,6 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     MONITOR_REGISTERS.A510_CHECK_MONITOR,
     S.decodeA510CheckMonitor,
   );
-
-  /**
-   * Brings one drive to its safe state: the motor stopped, every other bit of
-   * the command word left as it was.
-   *
-   * What a safe state *is* and which units are drives belong to this package.
-   * The transport supplies the shutdown lifecycle hook.
-   */
-  const stop = Effect.fnUntraced(function* (deviceId: number) {
-    const client = yield* clientFor(deviceId);
-    // A stop must reach the wire even when the write cache believes the
-    // register already holds it. That belief covers what this process wrote,
-    // and a drive started from its keypad holds something the record never saw.
-    client.cache?.invalidate(deviceId);
-    const current = yield* S.decodeCommandWord(
-      yield* client.readNow(COMMAND_REGISTERS.OPERATION_COMMAND),
-    );
-    const stopped = S.mergeCommandWordPatch(current, new S.CommandWordPatch({ run: false }));
-    yield* client.writeNow({
-      address: COMMAND_REGISTERS.OPERATION_COMMAND,
-      value: yield* S.encodeCommandWord(stopped),
-    });
-  });
-
-  if (options.safeShutdown ?? true) {
-    // Runs against every drive a client was built for, while the bus is still
-    // open. A failure is logged rather than raised: the remaining drives still
-    // need their turn.
-    yield* transport.onShutdownForUnits(
-      () => inverterDeviceIds,
-      (deviceId) =>
-        stop(deviceId).pipe(
-          Effect.catch((err) =>
-            Effect.logWarning(`Error while stopping the drive on unit ${deviceId} on exit: `, err),
-          ),
-        ),
-    );
-  }
 
   return {
     /**
