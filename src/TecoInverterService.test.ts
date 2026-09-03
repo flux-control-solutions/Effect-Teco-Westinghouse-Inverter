@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { SerialTransportService } from '@flux-control/effect-modbus-rs';
-import { Effect, Layer } from 'effect';
+import { Effect, Layer, Tracer } from 'effect';
 
 import { CommandWordPatch } from './schemas';
 import { TecoInverterService, type TecoInverterOptions } from './TecoInverterService';
@@ -140,6 +140,41 @@ describe('read-modify-write', () => {
 });
 
 describe('safe shutdown', () => {
+  test('ignores units touched only by another transport consumer', async () => {
+    const spans: Array<Tracer.NativeSpan> = [];
+    const tracer = Tracer.make({
+      span: (options) => {
+        const span = new Tracer.NativeSpan(options);
+        spans.push(span);
+        return span;
+      },
+    });
+    const transport = SerialTransportService.makeMockTransport([
+      TecoInverterService.mockDevice(deviceId),
+      TecoInverterService.mockDevice(2),
+    ])({ portPath: '/dev/mock', baudRate: 19200 });
+    const layer = Layer.provideMerge(TecoInverterService.make(), transport);
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const inverter = yield* TecoInverterService;
+        const sharedTransport = yield* SerialTransportService;
+        const unrelated = yield* sharedTransport.withClient(2);
+        yield* unrelated.readHoldingRegisters({ address: 0, quantity: 1 });
+        yield* inverter.operationCommand(deviceId).read();
+      }).pipe(
+        Effect.provide(layer),
+        Effect.provide(Layer.succeed(Tracer.Tracer, tracer)),
+        Effect.scoped,
+      ),
+    );
+
+    const shutdownUnits = spans
+      .filter((span) => span.name === 'modbus.write')
+      .map((span) => span.attributes.get('modbus.unit_ids'));
+    expect(shutdownUnits).toEqual([String(deviceId)]);
+  });
+
   test('stops every drive the service spoke to', async () => {
     const { run } = mockBus({ safeShutdown: true });
 

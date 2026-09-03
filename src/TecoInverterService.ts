@@ -232,6 +232,7 @@ export interface TecoInverterOptions {
  */
 const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptions = {}) {
   const transport = yield* SerialTransportService;
+  const inverterDeviceIds = new Set<number>();
 
   /**
    * One configuration, built once and shared by every drive on this bus.
@@ -256,11 +257,14 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   /**
    * The batching client for one drive.
    *
-   * This is also what records the drive as spoken to: the transport tracks the
-   * units it has built clients for, which is what the shutdown hook walks.
+   * This is also what records the drive as owned by this service, which is what
+   * its shutdown hook walks. The transport-wide unit set can include other
+   * kinds of device on the same bus.
    */
   const clientFor = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
-    transport.withBatchingClient(deviceId, batching);
+    Effect.tap(transport.withBatchingClient(deviceId, batching), () =>
+      Effect.sync(() => inverterDeviceIds.add(deviceId)),
+    );
 
   const readHolding = <A, E, R>(
     address: number,
@@ -434,8 +438,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
    * Brings one drive to its safe state: the motor stopped, every other bit of
    * the command word left as it was.
    *
-   * What a safe state *is* belongs to this package. The transport only supplies
-   * the hook and the list of units.
+   * What a safe state *is* and which units are drives belong to this package.
+   * The transport supplies the shutdown lifecycle hook.
    */
   const stop = Effect.fnUntraced(function* (deviceId: number) {
     const client = yield* clientFor(deviceId);
@@ -457,12 +461,14 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     // Runs against every drive a client was built for, while the bus is still
     // open. A failure is logged rather than raised: the remaining drives still
     // need their turn.
-    yield* transport.onShutdownPerUnit((deviceId) =>
-      stop(deviceId).pipe(
-        Effect.catch((err) =>
-          Effect.logWarning(`Error while stopping the drive on unit ${deviceId} on exit: `, err),
+    yield* transport.onShutdownForUnits(
+      () => inverterDeviceIds,
+      (deviceId) =>
+        stop(deviceId).pipe(
+          Effect.catch((err) =>
+            Effect.logWarning(`Error while stopping the drive on unit ${deviceId} on exit: `, err),
+          ),
         ),
-      ),
     );
   }
 
