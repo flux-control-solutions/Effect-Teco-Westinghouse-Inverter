@@ -62,6 +62,7 @@ import {
 } from '@flux-control/effect-modbus-rs';
 import {
   type ParamConfig,
+  type ParamEntry,
   type ParamEntryOfConfig,
   ParamKind,
   fromConfig,
@@ -325,10 +326,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   const clientFor = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
     ScopedCache.get(clients, deviceId);
 
-  const readHolding = <A, E, R>(
-    address: number,
-    decode: (raw: unknown) => Effect.Effect<A, E, R>,
-  ) =>
+  const readHolding = <A, E, R>(address: number, decode: (raw: number) => Effect.Effect<A, E, R>) =>
     Effect.fnUntraced(function* (deviceId: number) {
       const client = yield* clientFor(deviceId);
       return yield* decode(yield* client.read(address));
@@ -337,7 +335,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   const makeReadModifyWrite =
     <T, P, E1, R1, E2, R2>(
       address: number,
-      decode: (raw: unknown) => Effect.Effect<T, E1, R1>,
+      decode: (raw: number) => Effect.Effect<T, E1, R1>,
       encode: (value: T) => Effect.Effect<number, E2, R2>,
       merge: (base: T, patch: P) => T,
     ) =>
@@ -361,7 +359,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   const makeReadWrite =
     <T, E1, R1, E2, R2>(
       address: number,
-      decode: (raw: unknown) => Effect.Effect<T, E1, R1>,
+      decode: (raw: number) => Effect.Effect<T, E1, R1>,
       encode: (value: T) => Effect.Effect<number, E2, R2>,
     ) =>
     (deviceId: number) => {
@@ -375,30 +373,38 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     };
 
   const makeMonitor =
-    <T, E, R>(address: number, decode: (raw: unknown) => Effect.Effect<T, E, R>) =>
+    <T, E, R>(address: number, decode: (raw: number) => Effect.Effect<T, E, R>) =>
     (deviceId: number) => ({
       read: () => readHolding(address, decode)(deviceId),
     });
 
-  const makeParamOpsFromConfig = <C extends ParamConfig>(config: C) => {
-    // While `C` is still generic, `ParamEntryOfConfig<C>` stays a union of
-    // every entry shape, so the decode/encode pair is not inferable as one
-    // `T`. Widen here; the cast below re-narrows to the precise config type.
-    const { decode, encode } = fromConfig(config) as unknown as {
-      decode: (raw: unknown) => Effect.Effect<unknown, Schema.SchemaError>;
-      encode: (value: unknown) => Effect.Effect<number, Schema.SchemaError>;
-    };
-    const ops = makeReadWrite(config.register, decode, encode);
-    return Object.assign((deviceId: number) => ops(deviceId), {
-      meta: config.meta,
-    }) as unknown as ParamCallableOfEntry<ParamEntryOfConfig<C>>;
-  };
+  /**
+   * While `C` is still generic, `ParamEntryOfConfig<C>` stays a union of every
+   * entry shape, so the decode/encode pair is not inferable as one value type.
+   * Declaring the precise result and implementing against the plain config
+   * union is what keeps that precision for callers without an assertion.
+   */
+  function makeParamOpsFromConfig<C extends ParamConfig>(
+    config: C,
+  ): ParamCallableOfEntry<ParamEntryOfConfig<C>>;
+  function makeParamOpsFromConfig(config: ParamConfig) {
+    // Only the codec pair is named here. `ParamEntry` also carries its own
+    // schema, which makes the whole entry invariant and the union unassignable;
+    // narrowing to the pair leaves an ordinary widening assignment.
+    const entry: Pick<ParamEntry<Schema.Codec<any, any>>, 'decode' | 'encode'> = fromConfig(config);
+    const ops = makeReadWrite(config.register, entry.decode, entry.encode);
+    return Object.assign((deviceId: number) => ops(deviceId), { meta: config.meta });
+  }
 
   const makeGroupParamOps = <C extends Record<string, ParamConfig>>(configs: C) => {
+    // SAFETY: `Object.keys` types its result `string[]` because it cannot know
+    // the key set. Every key here comes from `configs`.
     const entries = (Object.keys(configs) as Array<Extract<keyof C, string>>).map(
       (key) => [key, makeParamOpsFromConfig(configs[key]!)] as const,
     );
 
+    // SAFETY: one entry per key of `C`, each built from that key's own config,
+    // which is what `GroupParamOps<C>` describes.
     return Record.fromEntries(entries) as GroupParamOps<C>;
   };
 
@@ -732,6 +738,18 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
  */
 export type TecoInverterApi = Effect.Success<ReturnType<typeof makeTecoInverter>>;
 
+/**
+ * The addresses declared by a numeric register enum.
+ *
+ * `Object.values` on a numeric enum yields its reverse mapping as well — every
+ * name alongside every number — so the addresses are the entries whose key is
+ * the name rather than the number.
+ */
+const registerAddresses = (registers: Record<string, string | number>): number[] =>
+  Object.entries(registers)
+    .filter(([name]) => !Number.isInteger(Number(name)))
+    .map(([, address]) => Number(address));
+
 export class TecoInverterService extends Context.Service<TecoInverterService, TecoInverterApi>()(
   'TecoInverterService',
 ) {
@@ -771,12 +789,8 @@ export class TecoInverterService extends Context.Service<TecoInverterService, Te
       coils: [],
       discreteInputs: [],
       holdingRegisters: [
-        ...Object.values(COMMAND_REGISTERS)
-          .filter((v): v is number => typeof v === 'number')
-          .map((address) => ({ address, default: 0 })),
-        ...Object.values(MONITOR_REGISTERS)
-          .filter((v): v is number => typeof v === 'number')
-          .map((address) => ({ address, default: 0 })),
+        ...registerAddresses(COMMAND_REGISTERS).map((address) => ({ address, default: 0 })),
+        ...registerAddresses(MONITOR_REGISTERS).map((address) => ({ address, default: 0 })),
         ...paramRegisterDefs,
       ],
       inputRegisters: [],

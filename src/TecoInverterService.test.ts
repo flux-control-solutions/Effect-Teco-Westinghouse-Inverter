@@ -45,6 +45,9 @@ const mockBus = (options: TecoInverterOptions) => {
  */
 const readGroup00 = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;
+  // SAFETY: every parameter in a group is a callable taking a device id and
+  // returning a `read`; they differ only in the value each one decodes to,
+  // which this test discards.
   const params = Object.values(inverter.parameters.group00) as ReadonlyArray<
     (id: number) => { read: () => Effect.Effect<unknown, unknown> }
   >;

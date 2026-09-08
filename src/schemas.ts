@@ -374,11 +374,26 @@ export const StateMonitorSchema = _stateMonitorParam.schema;
 export const decodeStateMonitor = _stateMonitorParam.decode;
 export const formattedStateMonitor = _stateMonitorParam.formatted;
 
+/**
+ * Brands a whole table of wire-code labels at once.
+ *
+ * The tables below are written as plain strings, because that is what the
+ * device manual lists. This applies the domain brand where the domain schema is
+ * in scope, so no entry has to be asserted into the brand one at a time.
+ */
+const brandLabels = <B extends string>(
+  brand: { readonly make: (value: string) => B },
+  labels: Readonly<Record<number, string>>,
+): Record<number, B> =>
+  Object.fromEntries(
+    Object.entries(labels).map(([code, label]): [number, B] => [Number(code), brand.make(label)]),
+  );
+
 // NOTE: ====================================================================
 //  ERROR DESCRIPTION MONITOR (Register 0x2521)
 // ========================================================================
 
-const errorDescriptionLabels: Record<number, string> = {
+const errorDescriptionLabels = {
   1: 'UV (Under-voltage)',
   2: 'OC (Over-current)',
   3: 'OV (Over-voltage)',
@@ -419,8 +434,8 @@ const errorDescriptionLabels: Record<number, string> = {
 
 const _errorDescriptionMonitorEntry = makeLookupParam(
   0x2521,
-  errorDescriptionLabels as Record<number, ErrorDescriptionMonitor>,
-  (raw) => `Unknown (${raw})` as ErrorDescriptionMonitor,
+  brandLabels(ErrorDescriptionMonitor, errorDescriptionLabels),
+  (raw) => ErrorDescriptionMonitor.make(`Unknown (${raw})`),
   meta('Error Description Monitor', '-', '0–49', '0'),
   { domain: ErrorDescriptionMonitor },
 );
@@ -540,7 +555,7 @@ export const OutputCurrentMonitorSchema = _outputCurrentMonitorEntry.schema;
 //  WARNING DESCRIPTION MONITOR (Register 0x2528)
 // ========================================================================
 
-const warningDescriptionLabels: Record<number, string> = {
+const warningDescriptionLabels = {
   0: 'No alarm',
   1: 'OV (Overvoltage)',
   2: 'UV (Undervoltage)',
@@ -626,8 +641,8 @@ const warningDescriptionLabels: Record<number, string> = {
 
 const _warningDescriptionMonitorEntry = makeLookupParam(
   0x2528,
-  warningDescriptionLabels as Record<number, WarningDescriptionMonitor>,
-  (raw) => `Unknown warning (${raw})` as WarningDescriptionMonitor,
+  brandLabels(WarningDescriptionMonitor, warningDescriptionLabels),
+  (raw) => WarningDescriptionMonitor.make(`Unknown warning (${raw})`),
   meta('Warning Description Monitor', '-', '0–80', '0'),
   { domain: WarningDescriptionMonitor },
 );
@@ -722,7 +737,7 @@ export const AnalogIn2MonitorSchema = _analogIn2MonitorEntry.schema;
 //  A510 CHECK MONITOR (Register 0x252F)
 // ========================================================================
 
-const a510CheckLabels: Record<number, string> = {
+const a510CheckLabels = {
   0x01: 'L510(s)',
   0x02: 'E510(s)',
   0x03: 'A510(s)',
@@ -731,8 +746,8 @@ const a510CheckLabels: Record<number, string> = {
 
 const _a510CheckMonitorEntry = makeLookupParam<A510CheckMonitor>(
   0x252f,
-  a510CheckLabels as Record<number, A510CheckMonitor>,
-  (raw) => `Unknown (0x${raw.toString(16)})` as A510CheckMonitor,
+  brandLabels(A510CheckMonitor, a510CheckLabels),
+  (raw) => A510CheckMonitor.make(`Unknown (0x${raw.toString(16)})`),
   meta('A510 Check Monitor', '-', '0x01–0x04', '0'),
   { domain: A510CheckMonitor },
 );
