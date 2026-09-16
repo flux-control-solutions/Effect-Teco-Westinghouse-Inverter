@@ -20,7 +20,7 @@ const program = Effect.gen(function* () {
   yield* Console.log(formattedCommandWord(ops));
 });
 
-const TecoLayer = TecoInverterService.make(true);
+const TecoLayer = TecoInverterService.make();
 const SerialLayer = SerialTransportService.fromRtu({
   portPath: '/dev/tty.usbserial-A10OFLK2',
   baudRate: 19200,

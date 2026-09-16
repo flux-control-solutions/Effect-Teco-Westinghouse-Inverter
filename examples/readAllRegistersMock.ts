@@ -16,7 +16,7 @@ import {
   formattedCommandWord,
   formattedFrequencyCommand,
   formattedStateMonitor,
-  type FrequencyHz,
+  FrequencyHz,
 } from '../src/schemas';
 import { TecoInverterService } from '../src/TecoInverterService';
 
@@ -34,7 +34,7 @@ const program = Effect.gen(function* () {
   yield* Console.log(`  Frequency Command:  ${formattedFrequencyCommand(freqCmd)}`);
 
   // Write a frequency command and verify the mock persists it
-  yield* inverter.frequencyCommand(deviceId).update(50 as FrequencyHz);
+  yield* inverter.frequencyCommand(deviceId).update(FrequencyHz.make(50));
   const freqCmdAfter = yield* inverter.frequencyCommand(deviceId).read();
   yield* Console.log(`  After write:        ${formattedFrequencyCommand(freqCmdAfter)}`);
 
@@ -47,7 +47,7 @@ const program = Effect.gen(function* () {
   yield* Console.log(`  State Monitor:      ${formattedStateMonitor(stateMon)}`);
 });
 
-const TecoLayer = TecoInverterService.make(true);
+const TecoLayer = TecoInverterService.make();
 const mockSerialLayer = SerialTransportService.makeMockTransport([
   TecoInverterService.mockDevice(1),
   TecoInverterService.mockDevice(2),

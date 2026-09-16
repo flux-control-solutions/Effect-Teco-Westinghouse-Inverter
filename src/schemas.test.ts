@@ -16,6 +16,8 @@ import {
   encodeTorqueCommand,
   TorquePercent,
   decodeSpeedLimitCommand,
+  SpeedLimitPercent,
+  Voltage,
   encodeSpeedLimitCommand,
   decodeAnalogOut1Command,
   decodeAnalogOut2Command,
@@ -30,6 +32,7 @@ import {
   decodeStateMonitor,
   ErrorDescriptionMonitorSchema,
   decodeErrorDescriptionMonitor,
+  ErrorDescriptionMonitor,
   decodeDigitalInStateMonitor,
   decodeFrequencyCommandMonitor,
   decodeOutputFrequencyMonitor,
@@ -49,21 +52,25 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-// Branded types are phantom (no-op at runtime);
-// return `any` from helpers so `.toBe()` comparisons don't
-// fire branded-type overload errors.
-const decodeOk = (
-  decoder: (u: unknown) => Effect.Effect<any, Schema.SchemaError>,
-  input: unknown,
-): any => Effect.runSync(decoder(input));
+// The helpers carry the schema's own value type through, so a branded domain
+// stays branded here and test values are constructed with `Brand.make` rather
+// than asserted into the brand. A decoder is declared over `unknown` because it
+// is built from an unknown-input decoder, but a holding register always decodes
+// from one wire word, which is the input these helpers take.
+type Decoder<A> = (raw: number) => Effect.Effect<A, Schema.SchemaError>;
+type Encoder<A, I> = (value: A) => Effect.Effect<I, Schema.SchemaError>;
 
-const encodeOk = (encoder: (a: any) => Effect.Effect<any, Schema.SchemaError>, value: any): any =>
-  Effect.runSync(encoder(value));
+const decodeOk = <A>(decoder: Decoder<A>, input: number): A => Effect.runSync(decoder(input));
 
-const encodeFail = (
-  encoder: (a: any) => Effect.Effect<any, Schema.SchemaError>,
-  value: any,
-): Schema.SchemaError => Effect.runSync(Effect.flip(encoder(value)));
+const encodeOk = <A, I>(encoder: Encoder<A, I>, value: A): I => Effect.runSync(encoder(value));
+
+/**
+ * The rejection under test is that the schema is read-only, so `value` is one
+ * the encoder's own domain accepts: the encode then fails for that reason
+ * rather than because the value was out of domain to begin with.
+ */
+const encodeFail = <A, I>(encoder: Encoder<A, I>, value: A): Schema.SchemaError =>
+  Effect.runSync(Effect.flip(encoder(value)));
 
 // ---------------------------------------------------------------------------
 // UInt16
@@ -71,9 +78,9 @@ const encodeFail = (
 
 describe('UInt16', () => {
   test('accepts valid values', () => {
-    expect(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(0))).toBe(0 as any);
-    expect(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(65535))).toBe(65535 as any);
-    expect(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(32768))).toBe(32768 as any);
+    expect<number>(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(0))).toBe(0);
+    expect<number>(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(65535))).toBe(65535);
+    expect<number>(Effect.runSync(Schema.decodeUnknownEffect(UInt16)(32768))).toBe(32768);
   });
 
   test('rejects negative values', () => {
@@ -92,8 +99,8 @@ describe('UInt16', () => {
   });
 
   test('encodes values within range', () => {
-    expect(Effect.runSync(Schema.encodeEffect(UInt16)(0 as any))).toBe(0 as any);
-    expect(Effect.runSync(Schema.encodeEffect(UInt16)(65535 as any))).toBe(65535 as any);
+    expect<number>(Effect.runSync(Schema.encodeEffect(UInt16)(UInt16.make(0)))).toBe(0);
+    expect<number>(Effect.runSync(Schema.encodeEffect(UInt16)(UInt16.make(65535)))).toBe(65535);
   });
 });
 
@@ -340,33 +347,33 @@ describe('CommandWordPatch / mergeCommandWordPatch', () => {
 
 describe('FrequencyCommandSchema', () => {
   test('decode 0 → 0 Hz', () => {
-    expect(decodeOk(decodeFrequencyCommand, 0)).toBe(0);
+    expect<number>(decodeOk(decodeFrequencyCommand, 0)).toBe(0);
   });
 
   test('decode 100 → 1.00 Hz', () => {
-    expect(decodeOk(decodeFrequencyCommand, 100)).toBe(1);
+    expect<number>(decodeOk(decodeFrequencyCommand, 100)).toBe(1);
   });
 
   test('decode 6000 → 60.00 Hz', () => {
-    expect(decodeOk(decodeFrequencyCommand, 6000)).toBe(60);
+    expect<number>(decodeOk(decodeFrequencyCommand, 6000)).toBe(60);
   });
 
   test('encode 0 Hz → 0', () => {
-    expect(encodeOk(encodeFrequencyCommand, 0 as FrequencyHz)).toBe(0);
+    expect(encodeOk(encodeFrequencyCommand, FrequencyHz.make(0))).toBe(0);
   });
 
   test('encode 50 Hz → 5000', () => {
-    expect(encodeOk(encodeFrequencyCommand, 50 as FrequencyHz)).toBe(5000);
+    expect(encodeOk(encodeFrequencyCommand, FrequencyHz.make(50))).toBe(5000);
   });
 
   test('encode 60 Hz → 6000', () => {
-    expect(encodeOk(encodeFrequencyCommand, 60 as FrequencyHz)).toBe(6000);
+    expect(encodeOk(encodeFrequencyCommand, FrequencyHz.make(60))).toBe(6000);
   });
 
   test('round-trip', () => {
     const hzValues = [0, 0.01, 1, 30, 50, 60, 99.99, 600];
     for (const hz of hzValues) {
-      const encoded = encodeOk(encodeFrequencyCommand, hz as FrequencyHz);
+      const encoded = encodeOk(encodeFrequencyCommand, FrequencyHz.make(hz));
       const decoded = decodeOk(decodeFrequencyCommand, encoded);
       expect(Math.abs(decoded - hz)).toBeLessThanOrEqual(0.005);
     }
@@ -379,7 +386,7 @@ describe('FrequencyCommandSchema', () => {
 
 describe('TorqueCommandSchema', () => {
   test('decode 0 → 0%', () => {
-    expect(decodeOk(decodeTorqueCommand, 0)).toBe(0);
+    expect<number>(decodeOk(decodeTorqueCommand, 0)).toBe(0);
   });
 
   test('decode 8192 → 100%', () => {
@@ -391,21 +398,21 @@ describe('TorqueCommandSchema', () => {
   });
 
   test('encode 0% → 0', () => {
-    expect(encodeOk(encodeTorqueCommand, 0 as TorquePercent)).toBe(0);
+    expect(encodeOk(encodeTorqueCommand, TorquePercent.make(0))).toBe(0);
   });
 
   test('encode 100% → 8192', () => {
-    expect(encodeOk(encodeTorqueCommand, 100 as TorquePercent)).toBe(8192);
+    expect(encodeOk(encodeTorqueCommand, TorquePercent.make(100))).toBe(8192);
   });
 
   test('encode -100% → 57344 (0xE000)', () => {
-    expect(encodeOk(encodeTorqueCommand, -100 as TorquePercent)).toBe(57344);
+    expect(encodeOk(encodeTorqueCommand, TorquePercent.make(-100))).toBe(57344);
   });
 
   test('round-trip', () => {
     const values = [-100, -50, 0, 25, 50, 100];
     for (const pct of values) {
-      const encoded = encodeOk(encodeTorqueCommand, pct as TorquePercent);
+      const encoded = encodeOk(encodeTorqueCommand, TorquePercent.make(pct));
       const decoded = decodeOk(decodeTorqueCommand, encoded);
       expect(Math.abs(decoded - pct)).toBeLessThanOrEqual(0.02);
     }
@@ -418,23 +425,23 @@ describe('TorqueCommandSchema', () => {
 
 describe('SpeedLimitCommandSchema', () => {
   test('decode 0 → 0%', () => {
-    expect(decodeOk(decodeSpeedLimitCommand, 0)).toBe(0);
+    expect<number>(decodeOk(decodeSpeedLimitCommand, 0)).toBe(0);
   });
 
   test('decode 120 → 120%', () => {
-    expect(decodeOk(decodeSpeedLimitCommand, 120)).toBe(120);
+    expect<number>(decodeOk(decodeSpeedLimitCommand, 120)).toBe(120);
   });
 
   test('decode 65416 (0xFF88) → -120%', () => {
-    expect(decodeOk(decodeSpeedLimitCommand, 65416)).toBe(-120);
+    expect<number>(decodeOk(decodeSpeedLimitCommand, 65416)).toBe(-120);
   });
 
   test('encode round-trip identity', () => {
     const values = [-120, -50, 0, 50, 120];
     for (const v of values) {
-      const encoded = encodeOk(encodeSpeedLimitCommand, v as any);
+      const encoded = encodeOk(encodeSpeedLimitCommand, SpeedLimitPercent.make(v));
       const decoded = decodeOk(decodeSpeedLimitCommand, encoded);
-      expect(decoded).toBe(v);
+      expect<number>(decoded).toBe(v);
     }
   });
 });
@@ -445,32 +452,32 @@ describe('SpeedLimitCommandSchema', () => {
 
 describe('AnalogOut Command Schemas', () => {
   test('AnalogOut1 decode 0 → 0V', () => {
-    expect(decodeOk(decodeAnalogOut1Command, 0)).toBe(0);
+    expect<number>(decodeOk(decodeAnalogOut1Command, 0)).toBe(0);
   });
 
   test('AnalogOut1 decode 1000 → 10V', () => {
-    expect(decodeOk(decodeAnalogOut1Command, 1000)).toBe(10);
+    expect<number>(decodeOk(decodeAnalogOut1Command, 1000)).toBe(10);
   });
 
   test('AnalogOut1 encode 5V → 500', () => {
-    expect(encodeOk(encodeAnalogOut1Command, 5 as any)).toBe(500);
+    expect(encodeOk(encodeAnalogOut1Command, Voltage.make(5))).toBe(500);
   });
 
   test('AnalogOut1 round-trip', () => {
     const voltages = [0, 2.5, 5, 7.5, 10];
     for (const v of voltages) {
-      const encoded = encodeOk(encodeAnalogOut1Command, v as any);
+      const encoded = encodeOk(encodeAnalogOut1Command, Voltage.make(v));
       const decoded = decodeOk(decodeAnalogOut1Command, encoded);
       expect(Math.abs(decoded - v)).toBeLessThanOrEqual(0.005);
     }
   });
 
   test('AnalogOut2 decode 500 → 5V', () => {
-    expect(decodeOk(decodeAnalogOut2Command, 500)).toBe(5);
+    expect<number>(decodeOk(decodeAnalogOut2Command, 500)).toBe(5);
   });
 
   test('AnalogOut2 encode 10V → 1000', () => {
-    expect(encodeOk(encodeAnalogOut2Command, 10 as any)).toBe(1000);
+    expect(encodeOk(encodeAnalogOut2Command, Voltage.make(10))).toBe(1000);
   });
 });
 
@@ -603,25 +610,25 @@ describe('StateMonitorSchema', () => {
 
 describe('ErrorDescriptionMonitorSchema', () => {
   test('decode known error codes', () => {
-    expect(decodeOk(decodeErrorDescriptionMonitor, 1)).toBe('UV (Under-voltage)');
-    expect(decodeOk(decodeErrorDescriptionMonitor, 2)).toBe('OC (Over-current)');
-    expect(decodeOk(decodeErrorDescriptionMonitor, 28)).toBe('CE (Communication error)');
-    expect(decodeOk(decodeErrorDescriptionMonitor, 29)).toBe('STO (Safe torque off)');
+    expect<string>(decodeOk(decodeErrorDescriptionMonitor, 1)).toBe('UV (Under-voltage)');
+    expect<string>(decodeOk(decodeErrorDescriptionMonitor, 2)).toBe('OC (Over-current)');
+    expect<string>(decodeOk(decodeErrorDescriptionMonitor, 28)).toBe('CE (Communication error)');
+    expect<string>(decodeOk(decodeErrorDescriptionMonitor, 29)).toBe('STO (Safe torque off)');
   });
 
   test('decode unknown error code returns fallback', () => {
-    expect(decodeOk(decodeErrorDescriptionMonitor, 99)).toBe('Unknown (99)');
-    expect(decodeOk(decodeErrorDescriptionMonitor, 255)).toBe('Unknown (255)');
+    expect<string>(decodeOk(decodeErrorDescriptionMonitor, 99)).toBe('Unknown (99)');
+    expect<string>(decodeOk(decodeErrorDescriptionMonitor, 255)).toBe('Unknown (255)');
   });
 
   test('decode 0 returns unknown', () => {
     const result = decodeOk(decodeErrorDescriptionMonitor, 0);
-    expect(result).toBe('Unknown (0)');
+    expect<string>(result).toBe('Unknown (0)');
   });
 
   test('encode fails with read-only error', () => {
     const encoder = Schema.encodeEffect(ErrorDescriptionMonitorSchema);
-    const err = encodeFail(encoder, 'test' as any);
+    const err = encodeFail(encoder, ErrorDescriptionMonitor.make('UV (Under-voltage)'));
     expect(err.message || err.toString()).toContain('read only');
   });
 });
@@ -661,22 +668,22 @@ describe('DigitalInStateMonitorSchema', () => {
 
 describe('FrequencyCommandMonitorSchema', () => {
   test('decode 0 → 0 Hz', () => {
-    expect(decodeOk(decodeFrequencyCommandMonitor, 0)).toBe(0);
+    expect<number>(decodeOk(decodeFrequencyCommandMonitor, 0)).toBe(0);
   });
   test('decode 5000 → 50 Hz', () => {
-    expect(decodeOk(decodeFrequencyCommandMonitor, 5000)).toBe(50);
+    expect<number>(decodeOk(decodeFrequencyCommandMonitor, 5000)).toBe(50);
   });
   test('decode 6000 → 60 Hz', () => {
-    expect(decodeOk(decodeFrequencyCommandMonitor, 6000)).toBe(60);
+    expect<number>(decodeOk(decodeFrequencyCommandMonitor, 6000)).toBe(60);
   });
 });
 
 describe('OutputFrequencyMonitorSchema', () => {
   test('decode 0 → 0 Hz', () => {
-    expect(decodeOk(decodeOutputFrequencyMonitor, 0)).toBe(0);
+    expect<number>(decodeOk(decodeOutputFrequencyMonitor, 0)).toBe(0);
   });
   test('decode 5000 → 50 Hz', () => {
-    expect(decodeOk(decodeOutputFrequencyMonitor, 5000)).toBe(50);
+    expect<number>(decodeOk(decodeOutputFrequencyMonitor, 5000)).toBe(50);
   });
 });
 
@@ -686,13 +693,13 @@ describe('OutputFrequencyMonitorSchema', () => {
 
 describe('DCBusVoltageCommandMonitorSchema', () => {
   test('decode 0 → 0V', () => {
-    expect(decodeOk(decodeDCBusVoltageCommandMonitor, 0)).toBe(0);
+    expect<number>(decodeOk(decodeDCBusVoltageCommandMonitor, 0)).toBe(0);
   });
   test('decode 3000 → 300.0V', () => {
-    expect(decodeOk(decodeDCBusVoltageCommandMonitor, 3000)).toBe(300);
+    expect<number>(decodeOk(decodeDCBusVoltageCommandMonitor, 3000)).toBe(300);
   });
   test('decode 10000 → 1000.0V', () => {
-    expect(decodeOk(decodeDCBusVoltageCommandMonitor, 10000)).toBe(1000);
+    expect<number>(decodeOk(decodeDCBusVoltageCommandMonitor, 10000)).toBe(1000);
   });
 });
 
@@ -702,13 +709,13 @@ describe('DCBusVoltageCommandMonitorSchema', () => {
 
 describe('OutputCurrentMonitorSchema', () => {
   test('decode 0 → 0A', () => {
-    expect(decodeOk(decodeOutputCurrentMonitor, 0)).toBe(0);
+    expect<number>(decodeOk(decodeOutputCurrentMonitor, 0)).toBe(0);
   });
   test('decode 100 → 10.0A', () => {
-    expect(decodeOk(decodeOutputCurrentMonitor, 100)).toBe(10);
+    expect<number>(decodeOk(decodeOutputCurrentMonitor, 100)).toBe(10);
   });
   test('decode 65535 → 6553.5A', () => {
-    expect(decodeOk(decodeOutputCurrentMonitor, 65535)).toBe(6553.5);
+    expect<number>(decodeOk(decodeOutputCurrentMonitor, 65535)).toBe(6553.5);
   });
 });
 
@@ -718,14 +725,14 @@ describe('OutputCurrentMonitorSchema', () => {
 
 describe('WarningDescriptionMonitorSchema', () => {
   test('decode known warning codes', () => {
-    expect(decodeOk(decodeWarningDescriptionMonitor, 0)).toBe('No alarm');
-    expect(decodeOk(decodeWarningDescriptionMonitor, 1)).toBe('OV (Overvoltage)');
-    expect(decodeOk(decodeWarningDescriptionMonitor, 13)).toBe('CE (Communication error)');
-    expect(decodeOk(decodeWarningDescriptionMonitor, 65)).toBe('OH1 (Overheat 1)');
+    expect<string>(decodeOk(decodeWarningDescriptionMonitor, 0)).toBe('No alarm');
+    expect<string>(decodeOk(decodeWarningDescriptionMonitor, 1)).toBe('OV (Overvoltage)');
+    expect<string>(decodeOk(decodeWarningDescriptionMonitor, 13)).toBe('CE (Communication error)');
+    expect<string>(decodeOk(decodeWarningDescriptionMonitor, 65)).toBe('OH1 (Overheat 1)');
   });
 
   test('decode unknown warning code returns fallback', () => {
-    expect(decodeOk(decodeWarningDescriptionMonitor, 999)).toBe('Unknown warning (999)');
+    expect<string>(decodeOk(decodeWarningDescriptionMonitor, 999)).toBe('Unknown warning (999)');
   });
 });
 
@@ -757,13 +764,13 @@ describe('DigitalOutStateMonitorSchema', () => {
 
 describe('AnalogOut Monitor Schemas', () => {
   test('AnalogOut1 decode 0 → 0V', () => {
-    expect(decodeOk(decodeAnalogOut1Monitor, 0)).toBe(0);
+    expect<number>(decodeOk(decodeAnalogOut1Monitor, 0)).toBe(0);
   });
   test('AnalogOut1 decode 500 → 5V', () => {
-    expect(decodeOk(decodeAnalogOut1Monitor, 500)).toBe(5);
+    expect<number>(decodeOk(decodeAnalogOut1Monitor, 500)).toBe(5);
   });
   test('AnalogOut2 decode 1000 → 10V', () => {
-    expect(decodeOk(decodeAnalogOut2Monitor, 1000)).toBe(10);
+    expect<number>(decodeOk(decodeAnalogOut2Monitor, 1000)).toBe(10);
   });
 });
 
@@ -773,13 +780,13 @@ describe('AnalogOut Monitor Schemas', () => {
 
 describe('AnalogIn Monitor Schemas', () => {
   test('AnalogIn1 decode 0 → 0%', () => {
-    expect(decodeOk(decodeAnalogIn1Monitor, 0)).toBe(0);
+    expect<number>(decodeOk(decodeAnalogIn1Monitor, 0)).toBe(0);
   });
   test('AnalogIn1 decode 1000 → 100%', () => {
-    expect(decodeOk(decodeAnalogIn1Monitor, 1000)).toBe(100);
+    expect<number>(decodeOk(decodeAnalogIn1Monitor, 1000)).toBe(100);
   });
   test('AnalogIn2 decode 500 → 50%', () => {
-    expect(decodeOk(decodeAnalogIn2Monitor, 500)).toBe(50);
+    expect<number>(decodeOk(decodeAnalogIn2Monitor, 500)).toBe(50);
   });
 });
 
@@ -789,14 +796,14 @@ describe('AnalogIn Monitor Schemas', () => {
 
 describe('A510CheckMonitorSchema', () => {
   test('decode known model codes', () => {
-    expect(decodeOk(decodeA510CheckMonitor, 0x03)).toBe('A510(s)');
-    expect(decodeOk(decodeA510CheckMonitor, 0x01)).toBe('L510(s)');
-    expect(decodeOk(decodeA510CheckMonitor, 0x02)).toBe('E510(s)');
-    expect(decodeOk(decodeA510CheckMonitor, 0x04)).toBe('F510');
+    expect<string>(decodeOk(decodeA510CheckMonitor, 0x03)).toBe('A510(s)');
+    expect<string>(decodeOk(decodeA510CheckMonitor, 0x01)).toBe('L510(s)');
+    expect<string>(decodeOk(decodeA510CheckMonitor, 0x02)).toBe('E510(s)');
+    expect<string>(decodeOk(decodeA510CheckMonitor, 0x04)).toBe('F510');
   });
 
   test('decode unknown model code returns fallback', () => {
-    expect(decodeOk(decodeA510CheckMonitor, 0x05)).toBe('Unknown (0x5)');
-    expect(decodeOk(decodeA510CheckMonitor, 0xff)).toBe('Unknown (0xff)');
+    expect<string>(decodeOk(decodeA510CheckMonitor, 0x05)).toBe('Unknown (0x5)');
+    expect<string>(decodeOk(decodeA510CheckMonitor, 0xff)).toBe('Unknown (0xff)');
   });
 });

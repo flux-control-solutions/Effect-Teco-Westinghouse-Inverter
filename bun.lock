@@ -5,19 +5,20 @@
     "": {
       "name": "@flux-control/effect-teco-westinghouse-inverter",
       "dependencies": {
-        "@flux-control/effect-modbus-rs": "^0.4.0",
+        "@flux-control/effect-modbus-rs": "^0.5.0",
         "@flux-control/modbus-schema": "^0.2.0",
       },
       "devDependencies": {
         "@changesets/cli": "^2.31.1",
         "@effect/language-service": "0.87.2",
         "@effect/platform-bun": "^4.0.0-rc.109",
+        "@oxlint/plugins": "1.76.0",
         "@types/bun": "latest",
         "effect": "^4.0.0-rc.109",
         "fallow": "^2.104.0",
         "husky": "^9.1.7",
         "oxfmt": "^0.60.0",
-        "oxlint": "^1.75.0",
+        "oxlint": "1.76.0",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
@@ -84,7 +85,7 @@
 
     "@fallow-cli/win32-x64-msvc": ["@fallow-cli/win32-x64-msvc@2.104.0", "", { "os": "win32", "cpu": "x64" }, "sha512-irER9HuZ9DXunl4H9RNsWQ9AvGmHs/Zp1+Yr2ATmgSNumERPXvgXa2IiGtCvKFqI72639TlhUj8+2WqIXZ54WQ=="],
 
-    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.4.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^4.0.0-rc.109" } }, "sha512-bcbaZoVXBT3fVYn6KRPvww8NUUyr53gCkZ+MWelSMC8uESQtLN4Xv2RTP68fD+289//DBki4PsP6kKY4GFfFaA=="],
+    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.5.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^4.0.0-rc.109" } }, "sha512-HGptY6BzcioyVYz++sKXCT3zw6F+vz/lextTditZ+Z0O6Ux1NO5OnPeitQs263WpzyqKyS4z2Krc0Ot9+4JugA=="],
 
     "@flux-control/modbus-schema": ["@flux-control/modbus-schema@0.2.0", "", { "peerDependencies": { "effect": "^4.0.0-rc.109" } }, "sha512-LoUYh8w3eShswFn8lP7s2nCaPJM4UxlmxT0vrMshtk0hBEDBmmwxYj0nv94ZO0ts9KF7Wvhebqqh+ovjYn+XyA=="],
 
@@ -187,6 +188,8 @@
     "@oxlint/binding-win32-ia32-msvc": ["@oxlint/binding-win32-ia32-msvc@1.76.0", "", { "os": "win32", "cpu": "ia32" }, "sha512-Ba0O659kgMv6pwO3z9PdO+K3aMxQRaw9HnG+e6AtOfgwcKFvYilciQYBoUBmxfQvOCKZe1SwjMkuB542NkuDMQ=="],
 
     "@oxlint/binding-win32-x64-msvc": ["@oxlint/binding-win32-x64-msvc@1.76.0", "", { "os": "win32", "cpu": "x64" }, "sha512-5qcirPHO8nKfkoowEVWtpAoVTcYDy6g0UT0NGic450Qv8J2NrOqg4uQ8QppRP4MDTC7Xx47lbZnmadTH03CGGA=="],
+
+    "@oxlint/plugins": ["@oxlint/plugins@1.76.0", "", {}, "sha512-twmbsVrYAjkaOw6I2pDiYSAxVLNOV8kcqMzajJ599SpqXzea+GjDCZVad1VUqNR/4thWjM4PER5n+3/TQtTkZQ=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 

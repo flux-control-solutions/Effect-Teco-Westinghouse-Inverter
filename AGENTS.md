@@ -30,6 +30,7 @@ index.ts                     — Re-exports all public API from src/
 src/
   Registers.ts               — Modbus register address enums (COMMAND_REGISTERS, MONITOR_REGISTERS, GROUP_*)
   TecoInverterService.ts     — Scoped Context.Service for A510 communication
+  TecoInverterService.test.ts — Batching, read-modify-write, and safe-shutdown behaviour
   errors.ts                  — Error utilities (readOnlyEncodeFailure)
   schemas.ts                 — Command/monitor wire schemas + formatters
   utils.ts                   — Bit helpers (bit)
@@ -46,8 +47,10 @@ examples/
 
 ## Architecture
 
-- **`TecoInverterService`** — A scoped `Context.Service` that wraps a `SerialTransportService`. Clients are created per `deviceId` via `transport.withClient(deviceId)` and cached in a `Set<number>`.
-- **Command registers** — Use read-modify-write semantics to update individual bitfields without affecting unchanged bits.
+- **`TecoInverterService`** — A scoped `Context.Service` that wraps a `SerialTransportService`. A unit has one batch, so the transport takes one declaration per unit and refuses a second. `clientFor` is therefore a `ScopedCache` over `transport.withBatchingClient(deviceId, options)`: accessors that arrive together on one drive await the same declaration instead of racing to make their own, and a declaration that failed is not held, so a momentary drop does not become permanent.
+- **Transaction batching** — `TecoInverterOptions` is one configuration, built once in `makeTecoInverter` and shared by every drive on the bus, because two batches on one unit would coalesce neither and the transport rejects a second request for a unit that asks for something else. Every default (`reads.window`, `writes.window`, `reads.maxGap`, `writes.cache`) leaves timing as it was before batching existed; see the README for why `maxGap` and the write cache are off rather than merely conservative.
+- **Command registers** — Use read-modify-write semantics to update individual bitfields without affecting unchanged bits. The read inside `update()` is `readNow`, not the collected read, so a window does not widen the race between the read and the write.
+- **Safe shutdown** — The release half of the `acquireRelease` inside `clientFor`, so each drive carries its own finalizer and one that cannot be reached costs only itself. `stopWith` takes the client the cache entry already holds rather than looking one up, because a lookup on a closing cache is interrupted and the motor would keep running. Which units are drives is never asked at shutdown: only a drive ever had a client built for it here. The stop clears the write record first, so a safety action is never suppressed by the cache.
 - **Monitor registers** — Read-only; attempts to encode a monitor value fail with `readOnlyEncodeFailure`.
 - **Parameter groups** — Accessed via `inverter.parameters.group##`. Each parameter callable returns `{ read(), update(value) }` for a given `deviceId`.
 - **Schema engine** — The device-agnostic factories (`makeParam`, `makeScaledParam`, etc.) now live in the `modbus-schema` package. Parameter group files import `ParamKind` and `ParamConfig` from `modbus-schema` directly.
