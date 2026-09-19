@@ -78,5 +78,3 @@ Shallow clones of key dependencies live in `references/` for offline browsing (g
 | ---------------- | ----------------------------- | -------------------------------------------- |
 | effect           | `references/effect`           | `packages/effect/src/` for core types        |
 | effect-modbus-rs | `references/effect-modbus-rs` | `src/` for transport service implementations |
-
-The skill at `.opencode/skills/reference-dependencies/SKILL.md` is the dedicated instruction for reference lookup.
