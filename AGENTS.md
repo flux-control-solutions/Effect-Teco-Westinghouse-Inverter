@@ -1,80 +1,96 @@
-# effect-teco-westinghouse-inverter
+# @flux-control/effect-teco-westinghouse-inverter
 
-Bidirectional schema transformers for Teco/Westinghouse A510 inverter Modbus parameters, built with Effect-TS.
+Effect 4 service and bidirectional schemas for Teco/Westinghouse A510 inverter Modbus parameters.
 
-## Stack
+## Development
 
-- **Runtime**: Bun only — never use Node, npm, pnpm, yarn, or vite.
-- **Language**: TypeScript 6 (ESNext, `verbatimModuleSyntax`, bundler resolution, `module: "Preserve"`).
-- **Core libs**: `effect` (^4.0.0-rc.109), `@flux-control/effect-modbus-rs`, `@flux-control/modbus-schema`. Effect v4 is still a release candidate.
-- **Sibling packages**: currently resolved via `file:` links to the local `v4` branches. Swap back to published semver ranges before release.
-- **LSP**: `@effect/language-service` plugin in `tsconfig.json` `compilerOptions.plugins`.
-- **License**: GPL-3.0.
+Use Bun for package development.
+Run commands from this repository's root. If a parent workspace manages dependencies, install from that workspace's root.
 
-## Commands
-
-| Action      | Command                      |
-| ----------- | ---------------------------- |
-| Install     | `bun install`                |
-| Type-check  | `bun run typecheck`          |
-| Test        | `bun test`                   |
-| Run example | `bun run examples/<name>.ts` |
-| Build       | `bun run build`              |
-
-No build step required for development — `noEmit` is on; Bun runs `.ts` directly.
-
-## Source layout
-
+```bash
+bun install
+bun run format
+bun run lint
+bun run typecheck
+bun run test
+bun run build
 ```
-index.ts                     — Re-exports all public API from src/
-src/
-  Registers.ts               — Modbus register address enums (COMMAND_REGISTERS, MONITOR_REGISTERS, GROUP_*)
-  TecoInverterService.ts     — Scoped Context.Service for A510 communication
-  TecoInverterService.test.ts — Batching, read-modify-write, and safe-shutdown behaviour
-  errors.ts                  — Error utilities (readOnlyEncodeFailure)
-  schemas.ts                 — Command/monitor wire schemas + formatters
-  utils.ts                   — Bit helpers (bit)
-  parameters/
-    index.ts                 — Re-exports all parameter groups
-    operations.ts            — Inverter-specific operation types that couple modbus-schema with effect-modbus-rs
-    group-00.ts … group-22.ts — Parameter configs per group
-examples/
-  readOpsRegister.ts         — Read/write operation command register
-  readAllRegisters.ts        — Read all command + monitor registers
-  readAllRegistersMock.ts   — Mock transport walkthrough
-  readGroup00Params.ts       — Read all Group 00 parameters
-```
+
+`bun run format` checks formatting. Use `bun run format:fix` to write formatting changes.
+Use `bun run lint:fix` to apply lint fixes.
+After dependency changes, run `bun run lock` to regenerate and validate the lockfile.
+
+Local exports use TypeScript source. Published exports use `dist/`, so build when checking the publication output.
+Run checks relevant to the change. For documentation-only changes, check formatting, paths, commands, and technical accuracy.
 
 ## Architecture
 
-- **`TecoInverterService`** — A scoped `Context.Service` that wraps a `SerialTransportService`. A unit has one batch, so the transport takes one declaration per unit and refuses a second. `clientFor` is therefore a `ScopedCache` over `transport.withBatchingClient(deviceId, options)`: accessors that arrive together on one drive await the same declaration instead of racing to make their own, and a declaration that failed is not held, so a momentary drop does not become permanent.
-- **Transaction batching** — `TecoInverterOptions` is one configuration, built once in `makeTecoInverter` and shared by every drive on the bus, because two batches on one unit would coalesce neither and the transport rejects a second request for a unit that asks for something else. Every default (`reads.window`, `writes.window`, `reads.maxGap`, `writes.cache`) leaves timing as it was before batching existed; see the README for why `maxGap` and the write cache are off rather than merely conservative.
-- **Command registers** — Use read-modify-write semantics to update individual bitfields without affecting unchanged bits. The read inside `update()` is `readNow`, not the collected read, so a window does not widen the race between the read and the write.
-- **Safe shutdown** — The release half of the `acquireRelease` inside `clientFor`, so each drive carries its own finalizer and one that cannot be reached costs only itself. `stopWith` takes the client the cache entry already holds rather than looking one up, because a lookup on a closing cache is interrupted and the motor would keep running. Which units are drives is never asked at shutdown: only a drive ever had a client built for it here. The stop clears the write record first, so a safety action is never suppressed by the cache.
-- **Monitor registers** — Read-only; attempts to encode a monitor value fail with `readOnlyEncodeFailure`.
-- **Parameter groups** — Accessed via `inverter.parameters.group##`. Each parameter callable returns `{ read(), update(value) }` for a given `deviceId`.
-- **Schema engine** — The device-agnostic factories (`makeParam`, `makeScaledParam`, etc.) now live in the `modbus-schema` package. Parameter group files import `ParamKind` and `ParamConfig` from `modbus-schema` directly.
-- **Operation types** — `ParamOperationOfEntry`, `ParamCallableOfEntry`, and `GroupParamOps` in `src/parameters/operations.ts` couple the generic engine with the `effect-modbus-rs` `ModbusError` type.
-- **`mockDevice(deviceId)`** — Returns a `SlaveDeviceDefinition` with all A510 registers (command, monitor, and all parameter groups) defaulting to `0`.
+- Keep `TecoInverterService` scoped and use `SerialTransportService` for transport operations.
+- Cache one batching client per device with `ScopedCache`. Concurrent accessors must share the declaration.
+- Do not retain failed client acquisitions in the cache.
+- Build one `TecoInverterOptions` configuration for the bus. Preserve the default timing, read-gap, and write-cache behavior.
+- Update command bitfields with read-modify-write operations. Use `readNow` so the read does not wait for a debounce window.
+- Give each acquired drive client its own shutdown finalizer.
+- During shutdown, use the acquired client. Do not request a client from a closing cache.
+- Clear the write record before sending the stop command so the cache cannot suppress the stop.
+- Keep shutdown limited to drives acquired by this service. A failure for one drive must not prevent stops for other drives.
+- Reject monitor-register encoding with `readOnlyEncodeFailure`.
+- Keep device-independent schema factories in `@flux-control/modbus-schema`.
+- Keep the transport-specific parameter operation types in `src/parameters/operations.ts`.
 
-## Conventions
+## Conventions and verification
 
-- Follow `effect` idioms: `Effect`, `Layer`, `Schema`, `Scope`, `Data.TaggedError` throughout.
-- Use `Bun.test` / `import { test, expect } from "bun:test"` for tests.
-- Always `import type` for type-only imports (`verbatimModuleSyntax`).
-- Don't use `dotenv` — Bun loads `.env` automatically.
-- Register addresses are Int16 hex values (e.g., `0x2501`).
-- Scaling factors are applied at encode/decode time, not at the wire level.
+- Follow the installed Effect 4 APIs and preserve typed error channels.
+- Use `import type` for type-only imports.
+- Apply scaling during schema encoding and decoding.
+- Preserve register addresses from the device specification in `src/Registers.ts`.
+- Use `mockDevice(deviceId)` for register behavior tests without hardware.
+- Import test helpers from `bun:test`.
+- Test changed bitfield updates, batching, schema failures, and shutdown behavior.
+- Let oxfmt control formatting and import order.
+- Use the configured Fallow tools to review changed code when available.
+- Keep dependency versions and compiler settings in `package.json` and the TypeScript configuration.
 
-## Tooling
+See `README.md` and `examples/` for parameter usage and batching defaults.
+If reference clones exist under `references/`, check their revisions against the installed dependencies before use.
 
-- **Fallow MCP** is configured via `opencode.json` (`bunx fallow-mcp`). The `.fallowrc.json` entry covers `index.ts`, `src/`, and `examples/`. Run `fallow audit` for pre-commit quality checks on changed code.
+## Written communication
 
-## Referencing upstream libraries
+Use Simplified Technical English principles for all text you create or revise.
+This includes documentation, code comments, JSDoc, TODOs, test descriptions, error messages, and agent instructions.
+It also includes commit messages, pull requests, review comments, release notes, and Linear titles, descriptions, comments, and updates.
+Apply the same rules to prose inside examples, code blocks, and Markdown or HTML comments.
 
-Shallow clones of key dependencies live in `references/` for offline browsing (gitignored; re-clone if stale):
+- Use short sentences, active voice, and concrete words.
+- Give one instruction per sentence. Put each condition before the action that depends on it.
+- Use the same term for the same concept.
+- Aim for 20 words per instruction sentence and 25 words per descriptive sentence.
+- Avoid idioms, metaphors, contractions, and unnecessary background.
+- Explain the reason or constraint in code comments. Do not repeat the code.
+- Preserve technical meaning, identifiers, commands, units, and required legal wording.
+- Keep necessary quotations exact and identify them as quotations. Apply the public-repository rules to quotations too.
+- Do not claim formal ASD-STE100 compliance without a complete review.
 
-| Reference        | Local path                    | Useful subdirectory                          |
-| ---------------- | ----------------------------- | -------------------------------------------- |
-| effect           | `references/effect`           | `packages/effect/src/` for core types        |
-| effect-modbus-rs | `references/effect-modbus-rs` | `src/` for transport service implementations |
+## Public repository
+
+Treat this repository and its associated development records as public, regardless of its current visibility.
+
+- Keep private information from consumers, customers, deployments, and other repositories out of public work.
+- Apply this rule to every repository file, including agent instructions, code, comments, tests, fixtures, and examples.
+- Apply it to documentation, commit messages, branch names, pull requests, review comments, issues, changesets, and release notes.
+- Apply it to logs, screenshots, and other attachments intended for publication.
+- Do not include private issue identifiers, URLs, customer names, deployment details, internal paths, or consumer-specific configuration.
+- Use public dependency names and public repository references when needed.
+- Use synthetic examples. Describe library requirements without naming private consumers.
+- Accept consumer-specific context through parameters instead of embedding private values.
+- Keep private tracking references in private records. Public records must remain understandable without private context.
+- Check the destination repository and all proposed public text before committing, pushing, or opening a pull request.
+
+## Commits and pull requests
+
+- Commit, push, or open pull requests only when requested.
+- Follow the repository's commit conventions. Use an imperative summary and explain important reasons in the body.
+- Describe the change, verification results, and remaining limitations in pull requests.
+- Report failed checks and checks that you could not run.
+- Do not rewrite published history unless explicitly requested.
+- Keep `CLAUDE.md` as an `@AGENTS.md` import. Keep these instructions complete for a standalone clone.
