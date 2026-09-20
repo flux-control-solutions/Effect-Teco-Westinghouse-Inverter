@@ -52,7 +52,6 @@ Run checks relevant to the change. For documentation-only changes, check formatt
 - Keep dependency versions and compiler settings in `package.json` and the TypeScript configuration.
 
 See `README.md` and `examples/` for parameter usage and batching defaults.
-If reference clones exist under `references/`, check their revisions against the installed dependencies before use.
 
 ## Written communication
 
