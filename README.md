@@ -19,7 +19,12 @@ For the complete API reference, see the [GitHub Pages documentation](https://flu
 bun add @flux-control/effect-teco-westinghouse-inverter
 ```
 
-Requires `effect`, `@flux-control/effect-modbus-rs`, and `@flux-control/modbus-schema` as peer dependencies.
+Install `effect` and `@flux-control/effect-modbus-rs` too. They are peer dependencies.
+The application builds the transport with `@flux-control/effect-modbus-rs`, so it must use the same copy as this package.
+
+```sh
+bun add effect @flux-control/effect-modbus-rs
+```
 
 ## Quick start
 
