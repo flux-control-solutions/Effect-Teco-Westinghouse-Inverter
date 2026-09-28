@@ -74,10 +74,11 @@ export const readGroup = (
               ),
             );
 
-          return Option.map(
-            read,
-            (value): ParameterRow => ({ key, description: param.meta.name, value: String(value) }),
-          );
+          return Option.map(read, (value): ParameterRow => ({
+            key,
+            description: param.meta.name,
+            value: String(value),
+          }));
         }),
       { concurrency: readWindow === undefined ? 1 : 'unbounded' },
     );
