@@ -58,6 +58,7 @@ import {
   type BatchingClientOptions,
   type BatchingModbusClient,
   type ModbusError,
+  type ModbusUnitAlreadyDeclaredError,
   type SlaveDeviceDefinition,
 } from '@flux-control/effect-modbus-rs';
 import {
@@ -288,6 +289,10 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
    * refuses a second. Declaring here rather than at each accessor is what makes
    * that true of this service: callers that arrive together on one drive await
    * the same declaration instead of racing to make their own.
+   *
+   * The transport keeps each declaration for its full scope. A new service
+   * over the same open transport therefore gets `ModbusUnitAlreadyDeclaredError`
+   * for each drive that an earlier service declared.
    */
   const clients = yield* ScopedCache.makeWith({
     // The highest unit ID an RTU segment can address. No bus can reach this
@@ -323,7 +328,9 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   });
 
   /** The batching client for one drive, declared on the first call for it. */
-  const clientFor = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
+  const clientFor = (
+    deviceId: number,
+  ): Effect.Effect<BatchingModbusClient, ModbusError | ModbusUnitAlreadyDeclaredError> =>
     ScopedCache.get(clients, deviceId);
 
   const readHolding = <A, E, R>(address: number, decode: (raw: number) => Effect.Effect<A, E, R>) =>
