@@ -428,7 +428,13 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
 
   /** The batching client for one drive, declared on the first call for it. */
   const clientFor = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
-    ScopedCache.get(clients, deviceId);
+    ScopedCache.get(clients, deviceId).pipe(
+      // Workaround for effect 4.0.0-rc.118. After an asynchronous lookup fails,
+      // `ScopedCache` resumes this fiber before it sets the zero time-to-live.
+      // Without the yield, the next call for this drive gets the same failure.
+      // Remove the yield when the upstream `ScopedCache` sets the expiry first.
+      Effect.tapError(() => Effect.yieldNow),
+    );
 
   const readHolding = <A, E, R>(address: number, decode: (raw: number) => Effect.Effect<A, E, R>) =>
     Effect.fnUntraced(function* (deviceId: number) {
