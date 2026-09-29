@@ -70,6 +70,8 @@ SerialTransportService.fromRtu({
 
 With `reconnect` enabled, operations attempted while the link is down fail with `ModbusCircuitOpenError` rather than queueing onto a dead bus. It is a member of the `ModbusError` union, so it can surface from any `read()` or `update()` on this service — code that matches exhaustively on `_tag` should handle it. Defaults are unchanged: with neither option set, operations remain single-shot.
 
+The transport can outlive the service. The transport keeps the batching client of each drive for its full scope. When a new service starts over the same open transport, it uses the existing client of each drive. The service logs one warning when the debounce windows or the presence of the write cache of that client differ from its own options. The client does not show its planner limits, such as `reads.maxGap`, or its retry policy, so the service cannot check them. When `writes.cache` is off and that client has a write cache, the service clears the record of the drive before each write, so each write still reaches the drive.
+
 See the [`@flux-control/effect-modbus-rs` docs](https://github.com/flux-control-solutions/Effect-modbus-rs) for the full policy templates.
 
 ### Transaction batching

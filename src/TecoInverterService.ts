@@ -56,6 +56,8 @@
 import {
   SerialTransportService,
   type BatchingClientOptions,
+  type BatchingDebounceOptions,
+  type BatchingDebounceWindows,
   type BatchingModbusClient,
   type ModbusError,
   type SlaveDeviceDefinition,
@@ -223,6 +225,33 @@ export interface TecoInverterOptions {
   };
 }
 
+const toMillis = (input: Duration.Input) => Duration.toMillis(Duration.fromInputUnsafe(input));
+
+/**
+ * Describes the effective debounce windows in milliseconds.
+ *
+ * Equal windows give equal text, whatever `Duration.Input` form they use. A
+ * zero window gives the same text as no window, because the client does not
+ * debounce in either case. An omitted `maxHold` is four times the write window,
+ * which is the limit that the batching client applies.
+ */
+const describeDebounce = (
+  options: BatchingDebounceOptions | BatchingDebounceWindows | undefined,
+): string => {
+  const writes = options?.writes;
+  const reads = options?.reads;
+  const writeText =
+    writes === undefined || toMillis(writes.window) <= 0
+      ? 'no write window'
+      : `write window ${toMillis(writes.window)} ms, maximum hold ` +
+        `${writes.maxHold === undefined ? toMillis(writes.window) * 4 : toMillis(writes.maxHold)} ms`;
+  const readText =
+    reads === undefined || toMillis(reads.window) <= 0
+      ? 'no read window'
+      : `read window ${toMillis(reads.window)} ms`;
+  return `${writeText}, ${readText}`;
+};
+
 /**
  * Effect service for interacting with a Teco/Westinghouse A510 inverter over Modbus.
  *
@@ -239,12 +268,12 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
    * One configuration, built once and shared by every drive on this bus.
    *
    * The transport keeps one batching client per unit — two batches on one unit
-   * coalesce neither — and rejects a second request for a unit that asks for
-   * something else. So these options are settled here rather than assembled at
-   * each call site.
+   * coalesce neither — and rejects a second declaration of a unit. So these
+   * options are settled here rather than assembled at each call site.
    */
+  const cacheWrites = options.writes?.cache ?? false;
   const batching: BatchingClientOptions = {
-    cache: options.writes?.cache ?? false,
+    cache: cacheWrites,
     debounce: {
       writes:
         options.writes?.window === undefined
@@ -281,13 +310,88 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     });
 
   /**
-   * One batching client per drive, declared on first use and held for the life
-   * of the service.
+   * Clears the record of a drive before a write, when this service does not cache writes.
    *
-   * A unit has one batch, so the transport takes one declaration per unit and
-   * refuses a second. Declaring here rather than at each accessor is what makes
-   * that true of this service: callers that arrive together on one drive await
-   * the same declaration instead of racing to make their own.
+   * The client can have a write cache that another component declared. That
+   * cache drops a write whose value it believes the drive holds. A value changed
+   * at the keypad makes that belief wrong, and the dropped write then leaves the
+   * keypad value on the drive. The client applies the cache when the batch
+   * flushes, and a read does not record a value, so clearing the record here
+   * lets the write reach the drive.
+   */
+  const forgetUnlessCached = (client: BatchingModbusClient, deviceId: number) =>
+    Effect.sync(() => {
+      if (!cacheWrites) client.cache?.invalidate(deviceId);
+    });
+
+  /**
+   * Gets the batching client for a drive from the transport.
+   *
+   * The transport keeps a declaration for its full scope, so the unit can
+   * already have a client when this service has none in its cache. This
+   * occurs when an earlier service over the same open transport closed, or
+   * when a first lookup ended after its declaration completed. In both cases
+   * the existing client is recovered and used.
+   *
+   * The existing client keeps the options of its declaration. The service
+   * checks two of them and logs one warning that lists each difference:
+   *
+   * - The debounce windows must equal the windows of this service.
+   * - The write cache must be present when `writes.cache` is on, and absent
+   *   when it is off.
+   *
+   * The client does not show its planner limits, such as `reads.maxGap`, or its
+   * retry policy, so the service cannot check them. A difference in these
+   * settings, or in the two checked options, means that another component
+   * declared the unit.
+   *
+   * The service uses the existing client in all cases, because one unit has
+   * one batch. When `writes.cache` is off and the existing client has a cache,
+   * the service clears the record of the unit before each write. A write then
+   * reaches the drive even when the cache holds a wrong belief.
+   */
+  const declareClient = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
+    transport.withBatchingClient(deviceId, batching).pipe(
+      Effect.catchTag('ModbusUnitAlreadyDeclaredError', () =>
+        Effect.tap(transport.batchingClient(deviceId), (client) => {
+          const differences: Array<string> = [];
+          const requested = describeDebounce(batching.debounce);
+          const existing = describeDebounce(client.debounce);
+          if (existing !== requested) {
+            differences.push(`Debounce: existing ${existing}; requested ${requested}.`);
+          }
+          if (cacheWrites && client.cache === undefined) {
+            differences.push(
+              'Write cache: the existing client has no write cache, so every write ' +
+                'reaches the drive.',
+            );
+          }
+          if (!cacheWrites && client.cache !== undefined) {
+            differences.push(
+              'Write cache: the existing client has a write cache. The service clears the ' +
+                'record of the unit before each write, so each write still reaches the drive.',
+            );
+          }
+          if (differences.length === 0) return Effect.void;
+          return Effect.logWarning(
+            `Unit ${deviceId} already has a batching client with different options. ` +
+              `Another component probably declared this unit. The service uses the existing ` +
+              `client. ${differences.join(' ')}`,
+          );
+        }),
+      ),
+    );
+
+  /**
+   * One batching client per drive, held for the life of the service.
+   *
+   * The cache makes every call after the first a lookup. Callers that arrive
+   * together on one drive share one lookup instead of racing to declare the
+   * unit.
+   *
+   * The transport can outlive this service. A new service over the same open
+   * transport recovers each existing declaration in `declareClient`, so the
+   * application does not have to recreate the transport with the service.
    */
   const clients = yield* ScopedCache.makeWith({
     // The highest unit ID an RTU segment can address. No bus can reach this
@@ -299,7 +403,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     timeToLive: (exit) => (Exit.isSuccess(exit) ? Duration.infinity : Duration.zero),
     lookup: (deviceId: number) =>
       Effect.acquireRelease(
-        transport.withBatchingClient(deviceId, batching),
+        declareClient(deviceId),
         // A stopped motor is the safe state of this device, and this runs while
         // the bus is still open. Each drive carries its own finalizer, so a
         // drive that cannot be reached costs only itself: the error is logged
@@ -351,6 +455,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
         const current = yield* decode(yield* client.readNow(address));
         const merged = merge(current, patch);
         const encoded = yield* encode(merged);
+        yield* forgetUnlessCached(client, deviceId);
         yield* client.write({ address, value: encoded });
       });
       return { read, update };
@@ -367,6 +472,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
       const update = Effect.fnUntraced(function* (value: T) {
         const client = yield* clientFor(deviceId);
         const encoded = yield* encode(value);
+        yield* forgetUnlessCached(client, deviceId);
         yield* client.write({ address, value: encoded });
       });
       return { read, update };
