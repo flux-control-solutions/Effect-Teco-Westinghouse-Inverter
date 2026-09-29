@@ -3,7 +3,8 @@ import { describe, expect, test } from 'bun:test';
 import { SerialTransportService } from '@flux-control/effect-modbus-rs';
 import { Effect, Layer, Logger, Tracer } from 'effect';
 
-import { CommandWordPatch } from './schemas';
+import { COMMAND_REGISTERS } from './Registers';
+import { CommandWordPatch, encodeFrequencyCommand, FrequencyHz } from './schemas';
 import { TecoInverterService, type TecoInverterOptions } from './TecoInverterService';
 
 const deviceId = 1;
@@ -321,6 +322,34 @@ describe('a service over a transport that outlives it', () => {
     expect(warnings[0]).toContain('Unit 1 already has a batching client');
     expect(warnings[0]).toContain('the existing client has a write cache');
     expect(warnings[0]).not.toContain('Debounce');
+  });
+
+  test('a write reaches the drive when the existing client has a wrong cached value', async () => {
+    // Another component declared the drive with a write cache. The cache then
+    // believes that the drive holds 50 Hz, but the drive holds 0, as after a
+    // change at the keypad. The service does not cache writes, so its update to
+    // 50 Hz must reach the drive and not be dropped as a repeat.
+    const { warnings, layer } = captureWarnings();
+    const target = FrequencyHz.make(50);
+    const frequency = await Effect.runPromise(
+      Effect.gen(function* () {
+        const transport = yield* SerialTransportService;
+        const existing = yield* transport.withBatchingClient(deviceId, { cache: true });
+        const encoded = yield* encodeFrequencyCommand(target);
+        existing.cache?.observe(deviceId, COMMAND_REGISTERS.FREQUENCY_COMMAND, encoded);
+        return yield* withService(
+          Effect.gen(function* () {
+            const inverter = yield* TecoInverterService;
+            yield* inverter.frequencyCommand(deviceId).update(target);
+            return yield* inverter.frequencyCommand(deviceId).read();
+          }),
+        );
+      }).pipe(Effect.provide(sharedBus()), Effect.provide(layer)),
+    );
+
+    expect(frequency).toBe(target);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('clears the record of the unit before each write');
   });
 
   test('a different window and a missing cache give one warning that names both', async () => {

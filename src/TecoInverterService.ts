@@ -310,6 +310,21 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     });
 
   /**
+   * Clears the record of a drive before a write, when this service does not cache writes.
+   *
+   * The client can have a write cache that another component declared. That
+   * cache drops a write whose value it believes the drive holds. A value changed
+   * at the keypad makes that belief wrong, and the dropped write then leaves the
+   * keypad value on the drive. The client applies the cache when the batch
+   * flushes, and a read does not record a value, so clearing the record here
+   * lets the write reach the drive.
+   */
+  const forgetUnlessCached = (client: BatchingModbusClient, deviceId: number) =>
+    Effect.sync(() => {
+      if (!cacheWrites) client.cache?.invalidate(deviceId);
+    });
+
+  /**
    * Gets the batching client for a drive from the transport.
    *
    * The transport keeps a declaration for its full scope, so the unit can
@@ -331,7 +346,9 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
    * declared the unit.
    *
    * The service uses the existing client in all cases, because one unit has
-   * one batch.
+   * one batch. When `writes.cache` is off and the existing client has a cache,
+   * the service clears the record of the unit before each write. A write then
+   * reaches the drive even when the cache holds a wrong belief.
    */
   const declareClient = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
     transport.withBatchingClient(deviceId, batching).pipe(
@@ -351,9 +368,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
           }
           if (!cacheWrites && client.cache !== undefined) {
             differences.push(
-              'Write cache: the existing client has a write cache, so it drops a write ' +
-                'whose value the drive is believed to hold. A value changed at the keypad ' +
-                'can then stay on the drive.',
+              'Write cache: the existing client has a write cache. The service clears the ' +
+                'record of the unit before each write, so each write still reaches the drive.',
             );
           }
           if (differences.length === 0) return Effect.void;
@@ -439,6 +455,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
         const current = yield* decode(yield* client.readNow(address));
         const merged = merge(current, patch);
         const encoded = yield* encode(merged);
+        yield* forgetUnlessCached(client, deviceId);
         yield* client.write({ address, value: encoded });
       });
       return { read, update };
@@ -455,6 +472,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
       const update = Effect.fnUntraced(function* (value: T) {
         const client = yield* clientFor(deviceId);
         const encoded = yield* encode(value);
+        yield* forgetUnlessCached(client, deviceId);
         yield* client.write({ address, value: encoded });
       });
       return { read, update };
