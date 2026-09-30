@@ -1,5 +1,8 @@
 /**
  * Group 12: Monitoring Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-62 to 4-67
  */
 
@@ -867,7 +870,7 @@ const all = {
     },
   },
   /**
-   * @param 12-80 AI1 Frequency Command -- Range: 0.0~599.0, Default: 0, Unit: Hz, Manual p.4-67
+   * AI1 Frequency Command -- Range: 0.0~599.0, Default: 0, Unit: Hz, Manual p.4-67
    * @remarks Not listed in the A510 communication addendum (Group 12 register map ends at 12-79).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -887,7 +890,7 @@ const all = {
     },
   },
   /**
-   * @param 12-82 Motor Load -- Range: 0~200.0, Default: -, Unit: %, Manual p.4-67
+   * Motor Load -- Range: 0~200.0, Default: -, Unit: %, Manual p.4-67
    * @remarks Not listed in the A510 communication addendum (Group 12 register map ends at 12-79).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -907,7 +910,7 @@ const all = {
     },
   },
   /**
-   * @param 12-85 AI3 Input -- Range: read-only, Default: -, Unit: %, Manual p.4-67
+   * AI3 Input -- Range: read-only, Default: -, Unit: %, Manual p.4-67
    * @remarks Not listed in the A510 communication addendum (Group 12 register map ends at 12-79).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -929,4 +932,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 12, keyed by parameter code. */
 export const group12Params = all;

@@ -1,5 +1,8 @@
 /**
  * Group 14: PLC Setting Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual page 4-72
  */
 
@@ -640,4 +643,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 14, keyed by parameter code. */
 export const group14Params = all;

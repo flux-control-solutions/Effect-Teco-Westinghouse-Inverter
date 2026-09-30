@@ -1,5 +1,8 @@
 /**
  * Group 20: Speed Control Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-80 to 4-82 (p480, p481, p482)
  */
 
@@ -501,7 +504,7 @@ const all = {
     },
   },
   /**
-   * @param 20-43 MPG Speed Magnification Calculation -- Range: 1~500, Default: 20, Manual p.4-82
+   * 20-43 MPG Speed Magnification Calculation -- Range: 1~500, Default: 20, Manual p.4-82
    * @remarks Not listed in the A510 communication addendum (Group 20 register map ends at 20-35).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -520,7 +523,7 @@ const all = {
     },
   },
   /**
-   * @param 20-44 MPG Speed Command Limit -- Range: 0.1~30.0, Default: 6.0, Unit: Hz, Manual p.4-82
+   * 20-44 MPG Speed Command Limit -- Range: 0.1~30.0, Default: 6.0, Unit: Hz, Manual p.4-82
    * @remarks Not listed in the A510 communication addendum (Group 20 register map ends at 20-35).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -543,4 +546,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 20, keyed by parameter code. */
 export const group20Params = all;

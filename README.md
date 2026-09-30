@@ -1,298 +1,369 @@
-# Effect-Teco-Westinghouse-Inverter
+# @flux-control/effect-teco-westinghouse-inverter
 
-**An Effect-TS service for Teco/Westinghouse A510 inverters** that wraps `@flux-control/effect-modbus-rs` to manage the Modbus transport, map command and monitor registers, and apply typed schemas to all parameter groups (00–22).
+An Effect v4 service and schema library for Teco/Westinghouse A510 inverter registers.
 
-For the complete API reference, see the [GitHub Pages documentation](https://flux-control-solutions.github.io/Effect-Teco-Westinghouse-Inverter/).
+The package provides typed command operations, monitor readings, and parameter access for Groups 00–22.
+It applies wire scaling and schema validation through [`@flux-control/modbus-schema`](https://github.com/flux-control-solutions/Modbus-Schema).
+The application supplies a transport from [`@flux-control/effect-modbus-rs`](https://github.com/flux-control-solutions/Effect-modbus-rs).
 
-`TecoInverterService` is a scoped `Context.Service` that:
+For generated API documentation, see [GitHub Pages](https://flux-control-solutions.github.io/Effect-Teco-Westinghouse-Inverter/).
 
-- **Manages the transport** — Opens RTU or ASCII connections via `@flux-control/effect-modbus-rs` and caches a client per device ID.
-- **Exposes operations** — Typed command registers (start/stop, frequency, torque, analog/digital outputs) with read-modify-write semantics for bitfield registers.
-- **Exposes monitoring** — Typed monitor registers (state, errors, frequency, current, voltage, etc.) that decode wire values into domain types.
-- **Maps parameters** — Typed access to every A510 parameter (Groups 00–22) with proper scaling factors (×0.001, ×0.01, ×0.1, signed Int16, etc.) applied at encode/decode time.
+## Features
 
-> This project is under active development. Its API may change before the 1.0 release.
+- Read and update command registers with typed values or bitfield patches.
+- Decode monitor registers into numeric values, flags, or lookup descriptions.
+- Access configured parameters through `inverter.parameters.group00` through `group22`.
+- Collect concurrent register operations into transport-managed batches.
+- Enable write caching when the application controls external register changes.
+- Attempt to stop acquired drives when the service scope closes.
+- Test register operations with generated in-memory device definitions.
 
-## Install
+## Installation
 
-```sh
+```bash
 bun add @flux-control/effect-teco-westinghouse-inverter
+bun add effect@4.0.0-rc.109 @flux-control/effect-modbus-rs@^0.7.0
 ```
 
-Install `effect` and `@flux-control/effect-modbus-rs` too. They are peer dependencies.
-The application builds the transport with `@flux-control/effect-modbus-rs`, so it must use the same copy as this package.
+The current package requires these peer dependencies:
 
-```sh
-bun add effect @flux-control/effect-modbus-rs
-```
+| Package                          | Version         |
+| -------------------------------- | --------------- |
+| `effect`                         | `^4.0.0-rc.109` |
+| `@flux-control/effect-modbus-rs` | `^0.7.0`        |
+
+Effect v3 is not compatible with this package.
+The application and this package must share the transport dependency.
+Local workspace exports use TypeScript source. Published exports use JavaScript and declarations from `dist/`.
 
 ## Quick start
 
-```ts
-import { Console, Effect, Layer } from 'effect';
-import { TecoInverterService } from '@flux-control/effect-teco-westinghouse-inverter';
+The application owns the serial port and transport configuration.
+Provide that transport to the service layer:
+
+```typescript
 import { SerialTransportService } from '@flux-control/effect-modbus-rs';
+import { FrequencyHz, TecoInverterService } from '@flux-control/effect-teco-westinghouse-inverter';
+import { Effect, Layer } from 'effect';
+
+const transport = SerialTransportService.fromRtu({
+  portPath: '/dev/ttyUSB0',
+  baudRate: 19200,
+});
+
+const inverterLayer = TecoInverterService.make().pipe(Layer.provide(transport));
 
 const program = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;
-  const freq = yield* inverter.frequencyCommand(1).read();
-  yield* inverter.frequencyCommand(1).update(50.0);
+  const before = yield* inverter.frequencyCommand(1).read();
+  yield* inverter.frequencyCommand(1).update(FrequencyHz.make(50));
+  const after = yield* inverter.frequencyCommand(1).read();
+  return { before, after };
 });
 
-program.pipe(
-  Effect.provide(
-    Layer.provideMerge(
-      TecoInverterService.make(),
-      SerialTransportService.fromRtu({ portPath: '/dev/ttyUSB0', baudRate: 19200 }),
-    ),
-  ),
-  Effect.scoped,
-  Effect.runPromise,
-);
+const result = await Effect.runPromise(program.pipe(Effect.provide(inverterLayer), Effect.scoped));
 ```
 
-## Service
+When this program ends, its scope closes and the service attempts to stop the acquired drive.
+Keep the service scope open for the required operating period.
+For custom layer wiring, `TecoInverterService.makeScoped(options)` returns the scoped constructor effect.
+It requires `SerialTransportService` and `Scope`.
 
-`TecoInverterService` is a scoped `Context.Service` that manages a Modbus client pool per device. Provide it with `Effect.provide` alongside a transport layer (`SerialTransportService` from `@flux-control/effect-modbus-rs`).
+## Register operations
 
-### Resilience
+Each command accessor accepts a device ID and returns `read()` and `update(value)` operations.
+Numeric operations use engineering units. Bitfield operations accept partial patches.
+Numeric command updates require branded values, such as `FrequencyHz.make(50)` or `Voltage.make(5)`.
+Each monitor accessor returns only `read()`.
 
-Retry and reconnection are owned by the transport, not by this service. Configure them where the transport layer is built and they apply to every inverter operation — there is no per-call wiring to do here:
+### Command registers
 
-```ts
-SerialTransportService.fromRtu({
-  portPath: '/dev/ttyUSB0',
-  baudRate: 19200,
-  retry: RetryPolicies.serial(), // backoff + jitter, tuned for a serial bus
-  reconnect: {}, // supervised reconnect + circuit breaker
-});
-```
+| Accessor            | Address  | Value                                              |
+| ------------------- | -------- | -------------------------------------------------- |
+| `operationCommand`  | `0x2501` | Run, reverse, fault reset, and other command flags |
+| `frequencyCommand`  | `0x2502` | Frequency in Hz; scale 0.01                        |
+| `torqueCommand`     | `0x2503` | Torque percentage; signed scale 1 / 81.92          |
+| `speedLimitCommand` | `0x2504` | Speed-limit percentage; signed scale 1             |
+| `analogOut1Command` | `0x2505` | Analog output voltage; scale 0.01 V                |
+| `analogOut2Command` | `0x2506` | Analog output voltage; scale 0.01 V                |
+| `digitalOutCommand` | `0x2507` | RY1, RY2, and pulse output flags                   |
 
-With `reconnect` enabled, operations attempted while the link is down fail with `ModbusCircuitOpenError` rather than queueing onto a dead bus. It is a member of the `ModbusError` union, so it can surface from any `read()` or `update()` on this service — code that matches exhaustively on `_tag` should handle it. Defaults are unchanged: with neither option set, operations remain single-shot.
+The frequency domain schema accepts 0–600 Hz. Its display metadata lists 0–599 Hz.
+Torque accepts −100–100%, speed limit accepts −120–120%, and analog output voltage accepts 0–10 V.
+These are schema bounds, not a guarantee that every drive configuration accepts the full range.
 
-The transport can outlive the service. The transport keeps the batching client of each drive for its full scope. When a new service starts over the same open transport, it uses the existing client of each drive. The service logs one warning when the debounce windows or the presence of the write cache of that client differ from its own options. The client does not show its planner limits, such as `reads.maxGap`, or its retry policy, so the service cannot check them. When `writes.cache` is off and that client has a write cache, the service clears the record of the drive before each write, so each write still reaches the drive.
+### Bitfield patches
 
-See the [`@flux-control/effect-modbus-rs` docs](https://github.com/flux-control-solutions/Effect-modbus-rs) for the full policy templates.
-
-### Transaction batching
-
-Every accessor names one register, so on its own each one costs a transaction — and on a half-duplex bus the round trip, not the payload, is the cost. Reading all 49 parameters of Group 00 that way costs 49 of them.
-
-Given a read window, the transport collects the reads that are in flight at the same moment and packs them into the fewest spans that cover them. Group 00 is three contiguous runs of registers, so the same 49 parameters cost three transactions:
-
-```ts
-const layer = Layer.provideMerge(
-  TecoInverterService.make({ reads: { window: '5 millis' } }),
-  SerialTransportService.fromRtu({ portPath: '/dev/ttyUSB0', baudRate: 19200 }),
-);
-
-const readGroup00 = Effect.gen(function* () {
+```typescript
+const runForward = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;
-  const params = Object.values(inverter.parameters.group00);
-  return yield* Effect.forEach(params, (param) => param(1).read(), {
-    concurrency: 'unbounded',
-  });
+  yield* inverter.operationCommand(1).update({ run: true, reverse: false });
+  yield* inverter.digitalOutCommand(1).update({ ry1: true });
 });
 ```
 
-Both halves are load-bearing. The window holds the first read long enough for the rest to arrive; `concurrency: 'unbounded'` is what puts them in flight at the same moment. Reads awaited one after another never overlap, whatever the window is, and each one pays the window in latency.
+`operationCommand` and `digitalOutCommand` use read-modify-write operations.
+They read immediately, merge the patch into decoded flags, and encode the resulting word.
+The read does not wait for a collection window. The write can still wait for a configured write window.
+The pair is not atomic. If callers patch the same register concurrently, serialize those updates in the application.
 
-The call sites do not change shape. `inverter.parameters.group00['00-01'](1).read()` reads the same way it always did; what changes is what it costs.
+### Monitor registers
 
-| Option           | Default     | Effect                                                                         |
-| ---------------- | ----------- | ------------------------------------------------------------------------------ |
-| `reads.window`   | `0`         | How long reads are collected before the spans are issued                       |
-| `reads.maxGap`   | `0`         | Unrequested registers the planner may read to join two spans into one          |
-| `writes.window`  | `0`         | How long a write is held so neighbouring writes travel with it                 |
-| `writes.maxHold` | `4x window` | Ceiling on the total hold, so a fast-commanded register still reaches the wire |
-| `writes.cache`   | `false`     | Drop a write whose value the drive is believed to already hold                 |
-| `safeShutdown`   | `true`      | Stop every drive this service spoke to when the scope closes                   |
+| Accessor                     | Address  | Result                       |
+| ---------------------------- | -------- | ---------------------------- |
+| `stateMonitor`               | `0x2520` | Operating state flags        |
+| `errorDescriptionMonitor`    | `0x2521` | Fault description            |
+| `digitalInStateMonitor`      | `0x2522` | S1–S8 input flags            |
+| `frequencyCommandMonitor`    | `0x2523` | Frequency command in Hz      |
+| `outputFrequencyMonitor`     | `0x2524` | Output frequency in Hz       |
+| `dcBusVoltageCommandMonitor` | `0x2526` | DC bus voltage in V          |
+| `outputCurrentMonitor`       | `0x2527` | Output current in A          |
+| `warningDescriptionMonitor`  | `0x2528` | Warning description          |
+| `digitalOutStateMonitor`     | `0x2529` | Digital output flags         |
+| `analogOut1Monitor`          | `0x252A` | Analog output 1 voltage in V |
+| `analogOut2Monitor`          | `0x252B` | Analog output 2 voltage in V |
+| `analogIn1Monitor`           | `0x252C` | Analog input 1 percentage    |
+| `analogIn2Monitor`           | `0x252D` | Analog input 2 percentage    |
+| `a510CheckMonitor`           | `0x252F` | Drive series description     |
 
-Every default leaves timing as it was before batching existed. The windows are opt-in because the right value is a property of the bus rather than of the drive: a useful size is on the order of one transaction, which is roughly 5 ms to 15 ms for a short frame at 19200 baud — arithmetic rather than a measurement. Time one on the segment you are on before settling on a value.
+Monitor registers are not a continuous address range. Their codecs reject encoding.
+Fault, warning, and model lookup codecs provide fallback descriptions for unknown codes.
+Frequency monitors use scale 0.01. Voltage and current scales are 0.1, except analog output voltage, which uses 0.01.
+Analog input percentage uses scale 0.1.
 
-Three behaviours are worth knowing before turning any of this on:
+### Errors
 
-- **`reads.maxGap` can fail a whole span.** Group 00's runs are separated by gaps of 2 and 7 registers, so a tolerance of 7 reads it in a single transaction. But a drive may answer `ILLEGAL_DATA_ADDRESS` for a register it does not implement, and the exception takes down the span, including the addresses that would have answered. Read one span across a known gap on the drive itself before raising this. The value covers the whole unit rather than one group, because a unit has one batch.
-- **`writes.cache` is off because an A510 has a keypad.** The record covers what this process wrote. A parameter changed at the panel leaves it describing a value the drive no longer holds, after which it suppresses exactly the write that would restore it. Turn it on for a drive with no local operator, where it saves a write per unchanged register. The stop issued at shutdown is never suppressed — it clears the record first.
-- **`update()` does not wait out the read window.** A read-modify-write pair holds a race between the read and the write, and a window would widen it by its own length, so the read inside `update()` is the immediate one. Nothing is given up: it still joins a batch that is already open.
+Reads can fail with Modbus errors or schema decode errors.
+Updates can fail with Modbus errors or schema encode errors.
+Import Modbus error classes from `@flux-control/effect-modbus-rs` for `Effect.catchTags`.
 
-### Command registers (write)
-
-| Method                        | Register | Description                      |
-| ----------------------------- | -------- | -------------------------------- |
-| `operationCommand(deviceId)`  | 0x2501   | Start/stop/reverse + fault reset |
-| `frequencyCommand(deviceId)`  | 0x2502   | Target output frequency (Hz)     |
-| `torqueCommand(deviceId)`     | 0x2503   | Torque limit / command (%)       |
-| `speedLimitCommand(deviceId)` | 0x2504   | Speed limit (%)                  |
-| `analogOut1Command(deviceId)` | 0x2505   | Analog output 1 (V)              |
-| `analogOut2Command(deviceId)` | 0x2506   | Analog output 2 (V)              |
-| `digitalOutCommand(deviceId)` | 0x2507   | Digital output terminals         |
-
-### Monitor registers (read)
-
-| Method                                 | Register | Description                |
-| -------------------------------------- | -------- | -------------------------- |
-| `stateMonitor(deviceId)`               | 0x2520   | Operating state flags      |
-| `errorDescriptionMonitor(deviceId)`    | 0x2521   | Fault code + description   |
-| `digitalInStateMonitor(deviceId)`      | 0x2522   | Digital input states       |
-| `frequencyCommandMonitor(deviceId)`    | 0x2523   | Active frequency command   |
-| `outputFrequencyMonitor(deviceId)`     | 0x2524   | Actual output frequency    |
-| `dcBusVoltageCommandMonitor(deviceId)` | 0x2526   | DC bus voltage (V)         |
-| `outputCurrentMonitor(deviceId)`       | 0x2527   | Output current (A)         |
-| `warningDescriptionMonitor(deviceId)`  | 0x2528   | Warning code + description |
-| `digitalOutStateMonitor(deviceId)`     | 0x2529   | Digital output states      |
-| `analogOut1Monitor(deviceId)`          | 0x252A   | Analog output 1 voltage    |
-| `analogOut2Monitor(deviceId)`          | 0x252B   | Analog output 2 voltage    |
-| `analogIn1Monitor(deviceId)`           | 0x252C   | Analog input 1 (%)         |
-| `analogIn2Monitor(deviceId)`           | 0x252D   | Analog input 2 (%)         |
-| `a510CheckMonitor(deviceId)`           | 0x252F   | Drive series/model ID      |
+Individual operations expose their errors through Effect error channels.
+The service does not return a per-device failure collection.
+If a polling cycle must retain healthy readings, handle each operation's failure in the application.
 
 ## Parameter groups
 
-Typed access to all Groups 00–22 via `inverter.parameters.group##`:
+Use the literal parameter code as the key:
 
-| Group | Name                          | Pages       |
-| ----- | ----------------------------- | ----------- |
-| 00    | Basic Parameters              | 4-19 – 4-22 |
-| 01    | Frequency Parameters          | 4-37 – 4-38 |
-| 02    | Accel/Decel Parameters        | 4-39 – 4-43 |
-| 03    | Multi-Function Input          | 4-44 – 4-52 |
-| 04    | Multi-Function Digital Output | 4-53 – 4-59 |
-| 05    | Multi-Step/Speed              | 4-60 – 4-66 |
-| 06    | VFD Protection                | 4-67 – 4-71 |
-| 07    | Start/Stop                    | 4-72 – 4-74 |
-| 08    | Protection                    | 4-75 – 4-79 |
-| 09    | Communication                 | 4-80        |
-| 10    | PID Control                   | 4-81 – 4-84 |
-| 11    | Auxiliary Functions           | 4-85 – 4-88 |
-| 12    | Monitoring                    | 4-62 – 4-67 |
-| 13    | Maintenance                   | 4-68 – 4-71 |
-| 14    | PLC Setting                   | 4-72        |
-| 15    | PLC Monitoring                | 4-73        |
-| 16    | LCD Function                  | 4-74 – 4-77 |
-| 17    | Automatic Tuning              | 4-78 – 4-79 |
-| 18    | Slip Compensation             | 4-79        |
-| 19    | Wobble Frequency              | 4-79 – 4-80 |
-| 20    | Speed Control                 | 4-80 – 4-82 |
-| 21    | Torque & Position Control     | 4-82 – 4-85 |
-| 22    | PM Motor                      | 4-85 – 4-88 |
-
-Each parameter callable returns `{ read(), update(value) }` for a given `deviceId`.
-
-### Schema engine
-
-The device-agnostic schema factories now live in the [`@flux-control/modbus-schema`](../Modbus-Schema/) package:
-
-- **`makeParam(register, meta)`** — Simple UInt16 pass-through
-- **`makeScaledParam(register, factor, meta)`** — Scaled value (e.g., 0.01 Hz)
-- **`makeSignedScaledParam(register, factor, meta)`** — Signed scaled value using two's complement over UInt16 wire
-- **`makeEnumParam(register, labels, meta)`** — Labeled selection values
-- **`makeBitfieldParam(register, flagsClass, bitLayout, meta)`** — Boolean flags packed into a word
-- **`makeLookupParam(register, labels, fallback, meta)`** — Decode-only lookup table with fallback
-
-Each factory returns a `ParamEntry` with both Effect-native and synchronous decode/encode APIs. Parameter group files import `ParamKind` and `ParamConfig` directly from `@flux-control/modbus-schema`, and `src/parameters/operations.ts` hosts the inverter-specific `ModbusError`-coupled operation types.
-
-## Testing with mocks
-
-Use `SerialTransportService.makeMockTransport` with `TecoInverterService.mockDevice()` — a built-in generator producing a full `SlaveDeviceDefinition` for the A510 with all registers defaulting to `0`.
-
-```ts
-import { Console, Effect, Layer } from 'effect';
-import { TecoInverterService } from '@flux-control/effect-teco-westinghouse-inverter';
-import { SerialTransportService } from '@flux-control/effect-modbus-rs';
-
-const program = Effect.gen(function* () {
+```typescript
+const configureDirection = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;
+  const direction = inverter.parameters.group00['00-01'];
+  const before = yield* direction(1).read();
+  yield* direction(1).update('Forward');
+  return { before, metadata: direction.meta };
+});
+```
 
-  const freq = yield* inverter.frequencyCommand(1).read();
-  yield* inverter.frequencyCommand(1).update(50.0);
-  const freqAfter = yield* inverter.frequencyCommand(1).read();
+Each parameter callable accepts a device ID and returns `read()` and `update(value)`.
+Its `meta` property exposes display metadata.
+Parameter values can be numeric, scaled, signed, or labeled selections, depending on their configuration.
+Use the inferred accessor type to determine the accepted value.
 
-  yield* Console.log(`Frequency: ${freq} -> ${freqAfter}`);
+| Group | Parameter area                 |
+| ----- | ------------------------------ |
+| 00    | Basic parameters               |
+| 01    | Frequency parameters           |
+| 02    | Acceleration and deceleration  |
+| 03    | Multi-function inputs          |
+| 04    | Multi-function digital outputs |
+| 05    | Multi-step speed               |
+| 06    | VFD protection                 |
+| 07    | Start and stop                 |
+| 08    | Protection                     |
+| 09    | Communication                  |
+| 10    | PID control                    |
+| 11    | Auxiliary functions            |
+| 12    | Monitoring                     |
+| 13    | Maintenance                    |
+| 14    | PLC settings                   |
+| 15    | PLC monitoring                 |
+| 16    | LCD functions                  |
+| 17    | Automatic tuning               |
+| 18    | Slip compensation              |
+| 19    | Wobble frequency               |
+| 20    | Speed control                  |
+| 21    | Torque and position control    |
+| 22    | PM motor                       |
+
+Group configurations and address enums are defined in `src/parameters/` and `src/Registers.ts`.
+Some addresses are marked as inferred in the register source.
+Parameter metadata can describe read-only values, but group accessors still expose `update()`.
+The library does not enforce every device-specific access restriction from that metadata.
+Check the drive specification for access permissions and addresses when selecting parameters.
+
+The package root exports register enums, schemas, the service, `readOnlyEncodeFailure`, and `bit`.
+It does not export the parameter configuration modules as package subpaths.
+Use `inverter.parameters` for parameter operations.
+
+## Batching and caching
+
+Pass bus-specific options to `TecoInverterService.make(options)`.
+Create the layer once and share it so the layer memo map can reuse one service instance.
+
+| Option           | Default                     | Behavior                                                        |
+| ---------------- | --------------------------- | --------------------------------------------------------------- |
+| `reads.window`   | `0`                         | Collection window for concurrent reads                          |
+| `reads.maxGap`   | `0`                         | Unrequested addresses allowed between requested spans           |
+| `writes.window`  | `0`                         | Debounce window for nearby writes                               |
+| `writes.maxHold` | Four times the write window | Maximum hold before flushing continuous updates                 |
+| `writes.cache`   | `false`                     | Skip writes whose encoded values match cached values            |
+| `safeShutdown`   | `true`                      | Attempt to clear the run flag on acquired drives during cleanup |
+
+Window and hold options accept `Duration.Input`.
+Zero windows disable collection delays. `reads.maxGap` applies to all groups on a unit.
+
+### Collect concurrent reads
+
+```typescript
+const batchedLayer = TecoInverterService.make({
+  reads: { window: '5 millis', maxGap: 0 },
+}).pipe(Layer.provide(transport));
+
+const readGroup00 = Effect.gen(function* () {
+  const inverter = yield* TecoInverterService;
+  return yield* Effect.all(
+    Object.values(inverter.parameters.group00).map((parameter) => parameter(1).read()),
+    { concurrency: 'unbounded' },
+  );
 });
 
-const mockLayer = SerialTransportService.makeMockTransport([TecoInverterService.mockDevice(1)])({
-  portPath: '/dev/null',
-  baudRate: 9600,
-});
-
-program.pipe(
-  Effect.provide(Layer.provideMerge(TecoInverterService.make(), mockLayer)),
-  Effect.scoped,
-  Effect.runPromise,
+const values = await Effect.runPromise(
+  readGroup00.pipe(Effect.provide(batchedLayer), Effect.scoped),
 );
 ```
 
-See `examples/readAllRegistersMock.ts` for a full walkthrough.
+The collection window and concurrent execution are both required for separate reads to share planned spans.
+Sequential reads do not overlap and each waits for its own window.
+Mock tests verify three Group 00 read spans with zero gap tolerance and one span with `maxGap: 7`.
+An unsupported address inside a gap can fail the entire span on a physical drive.
 
-### Overriding mock defaults
+### Write completion and cache ownership
 
-`mockDevice()` returns a standard `SlaveDeviceDefinition`. Override individual register defaults before passing to `makeMockTransport`:
+Each new write restarts the write window. `writes.maxHold` bounds continuous arrivals.
+Callers wait for the outcome of the batch handling their update.
+A newer write to the same register can replace a held value; both callers receive the handling batch's outcome.
+Caching can also suppress unchanged values. Successful completion does not prove that each requested value was sent.
 
-```ts
-const device = TecoInverterService.mockDevice(1);
-const customRegisters = device.holdingRegisters.map((reg) => {
-  if (reg.address === 0x2501) return { address: reg.address, default: 5 }; // Running
-  if (reg.address === 0x2502) return { address: reg.address, default: 500 }; // 50.0 Hz
-  return reg;
+Write caching is disabled by default because keypad changes and external writers can invalidate cached values.
+The service does not refresh write-cache values from ordinary reads.
+The transport invalidates caches after failed writes and connection state changes.
+If caching is enabled, manage other external changes through the transport's register cache.
+
+## Transport and lifecycle
+
+The service requires `SerialTransportService` and does not open a serial port itself.
+Use `fromRtu` or `fromAscii` from the transport package as required by the application.
+The transport owns serialization, retry, reconnect, and transaction planning.
+
+```typescript
+import { RetryPolicies } from '@flux-control/effect-modbus-rs';
+
+const resilientTransport = SerialTransportService.fromRtu({
+  portPath: '/dev/ttyUSB0',
+  baudRate: 19200,
+  retry: RetryPolicies.serial(),
+  reconnect: {},
 });
-
-const mockLayer = SerialTransportService.makeMockTransport([
-  {
-    ...device,
-    holdingRegisters: customRegisters,
-  },
-]);
 ```
 
-### SlaveDeviceDefinition schema
+Retry and reconnect are opt-in transport settings.
+Without them, operations use single attempts and no supervised reconnect.
+While a supervised circuit is open, operations fail with `ModbusCircuitOpenError` before reaching the drive.
 
-| Property           | Type                     | Description                                    |
-| ------------------ | ------------------------ | ---------------------------------------------- |
-| `unitId`           | `number`                 | Modbus slave/unit ID (required)                |
-| `coils`            | `{ address, default }[]` | Coil registers                                 |
-| `discreteInputs`   | `{ address, default }[]` | Discrete input registers                       |
-| `holdingRegisters` | `{ address, default }[]` | Holding registers (command + monitor + params) |
-| `inputRegisters`   | `{ address, default }[]` | Input registers                                |
+### Client reuse
 
-## Register map
+The service caches one acquired batching client per unit and expires failed acquisitions.
+Concurrent callers for the same unit share client acquisition.
+If a transport outlives a service scope, a later service reuses its existing client declarations and their original options.
 
-Command and monitor registers are TypeScript enums in `src/Registers.ts`:
+The service warns about different debounce windows or write-cache presence.
+Planner limits and retry policies are not inspectable through the client.
+If this service disables write caching, updates invalidate any cache on a reused client before queuing writes.
 
-- `COMMAND_REGISTERS` — 0x2501–0x2507
-- `MONITOR_REGISTERS` — 0x2520–0x252F
-- `GROUP_00_Basic_Parameters` through `GROUP_22_PM_Motor_Parameters` — 0x0000–0x1623
+### Shutdown
+
+When `safeShutdown` is enabled, each acquired client registers its own cleanup operation.
+Cleanup invalidates the unit's write cache, reads the operation command immediately, and writes a patch with `run: false`.
+Other modeled command flags remain as decoded from that read.
+The write bypasses the debounce delay.
+
+Cleanup only addresses drives acquired by this service.
+It logs and ignores stop failures so other drives still receive a stop attempt.
+A successful command write does not confirm physical motor standstill.
+Set `safeShutdown: false` to disable these stop attempts.
+
+## Testing without hardware
+
+`TecoInverterService.mockDevice(deviceId)` returns a `SlaveDeviceDefinition` for an in-memory transport:
+
+```typescript
+const mockTransport = SerialTransportService.makeMockTransport([TecoInverterService.mockDevice(1)])(
+  { portPath: 'mock', baudRate: 19200 },
+);
+
+const mockLayer = TecoInverterService.make().pipe(Layer.provide(mockTransport));
+
+const mockResult = await Effect.runPromise(program.pipe(Effect.provide(mockLayer), Effect.scoped));
+```
+
+Command and monitor holding registers start at zero.
+Parameter registers use numeric defaults derived from metadata; scaled defaults are converted to wire counts.
+Non-numeric defaults become zero. These values are test defaults, not a complete physical drive simulation.
+
+Override individual wire values before creating the transport:
+
+```typescript
+const device = TecoInverterService.mockDevice(1);
+const customDevice = {
+  ...device,
+  holdingRegisters: device.holdingRegisters.map((register) =>
+    register.address === 0x2502 ? { ...register, default: 5000 } : register,
+  ),
+};
+
+const customMockTransport = SerialTransportService.makeMockTransport([customDevice])({
+  portPath: 'mock',
+  baudRate: 19200,
+});
+```
+
+The wire value `5000` represents `50 Hz` at scale 0.01.
+Use `Layer.provideMerge` when a test also needs direct access to `SerialTransportService`.
+See [examples/readAllRegistersMock.ts](examples/readAllRegistersMock.ts) for a complete mock example.
 
 ## Development
 
-| Action      | Command                      |
-| ----------- | ---------------------------- |
-| Install     | `bun install`                |
-| Type-check  | `bun run typecheck`          |
-| Test        | `bun test`                   |
-| Run example | `bun run examples/<name>.ts` |
+Run commands from this package repository root.
+If a parent workspace manages dependencies, install from that workspace root instead.
+
+```bash
+bun install
+bun run format
+bun run lint
+bun run typecheck
+bun run test
+bun run build
+```
+
+`bun run format` checks formatting. `bun run format:fix` applies formatting changes.
+`bun run build` produces published JavaScript and declarations.
+`bun run docs` generates API documentation with the separate TypeDoc tooling.
 
 ## Source layout
 
-```
-index.ts                     — Re-exports all public API
-src/
-  Registers.ts               — Modbus register address enums
-  TecoInverterService.ts     — Scoped Context.Service for A510 communication
-  errors.ts                  — Error utilities (readOnlyEncodeFailure)
-  schemas.ts                 — Command/monitor wire schemas + formatters
-  utils.ts                   — Bit helpers (bit)
-  parameters/
-    index.ts                 — Re-exports all parameter groups
-    operations.ts            — Inverter-specific operation types that couple @flux-control/modbus-schema with @flux-control/effect-modbus-rs
-    group-00.ts … group-22.ts — Parameter configs per group
-examples/
-  readOpsRegister.ts         — Read/write operation command register
-  readAllRegisters.ts        — Read all command + monitor registers
-  readAllRegistersMock.ts    — Mock transport walkthrough
-  readGroup00Params.ts       — Read all Group 00 parameters
+```text
+index.ts                     Public package exports
+src/Registers.ts             Command, monitor, and parameter address enums
+src/TecoInverterService.ts    Scoped service and mock device factory
+src/schemas.ts               Command and monitor schemas and domain types
+src/errors.ts                Read-only encoding error helper
+src/utils.ts                 Bit-mask helper
+src/parameters/              Group configurations and operation types
+examples/                    Serial and mock transport examples
+tools/typedoc/               API documentation tooling
 ```
 
 ## License
 
-GPL-3.0
+GPL-3.0. See [LICENSE](LICENSE).

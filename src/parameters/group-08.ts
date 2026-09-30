@@ -1,5 +1,8 @@
 /**
  * Group 08: Protection Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-47 to 4-51
  */
 
@@ -16,7 +19,7 @@ const p450 = 450 as const;
 const p451 = 451 as const;
 
 const all = {
-  /** @param 08-00 Stall Prevention Function -- Bit field, Default: 0000b, Manual p.4-47 */
+  /** 08-00 Stall Prevention Function -- Bit field, Default: 0000b, Manual p.4-47 */
   '08-00': {
     register: GROUP_08_Protection_Parameters['08-00'],
     kind: ParamKind.UInt16,
@@ -31,7 +34,7 @@ const all = {
     },
   },
 
-  /** @param 08-01 Stall Prevention Level in Acceleration -- Range: 20~200, Default: HD:150 ND:120, Unit: %, Manual p.4-47 */
+  /** 08-01 Stall Prevention Level in Acceleration -- Range: 20~200, Default: HD:150 ND:120, Unit: %, Manual p.4-47 */
   '08-01': {
     register: GROUP_08_Protection_Parameters['08-01'],
     kind: ParamKind.UInt16,
@@ -46,7 +49,7 @@ const all = {
     },
   },
 
-  /** @param 08-02 Stall Prevention Level in Deceleration -- Range: voltage-dependent, Unit: V, Manual p.4-47 */
+  /** 08-02 Stall Prevention Level in Deceleration -- Range: voltage-dependent, Unit: V, Manual p.4-47 */
   '08-02': {
     register: GROUP_08_Protection_Parameters['08-02'],
     kind: ParamKind.UInt16,
@@ -61,7 +64,7 @@ const all = {
     },
   },
 
-  /** @param 08-03 Stall Prevention Level in Operation -- Range: 30~200, Default: HD:160 ND:120, Unit: %, Manual p.4-47 */
+  /** 08-03 Stall Prevention Level in Operation -- Range: 30~200, Default: HD:160 ND:120, Unit: %, Manual p.4-47 */
   '08-03': {
     register: GROUP_08_Protection_Parameters['08-03'],
     kind: ParamKind.UInt16,
@@ -76,7 +79,7 @@ const all = {
     },
   },
 
-  /** @param 08-05 Selection for Motor Overload Protection (OL1) -- Bit field, Default: 0101b, Manual p.4-47 */
+  /** 08-05 Selection for Motor Overload Protection (OL1) -- Bit field, Default: 0101b, Manual p.4-47 */
   '08-05': {
     register: GROUP_08_Protection_Parameters['08-05'],
     kind: ParamKind.UInt16,
@@ -91,7 +94,7 @@ const all = {
     },
   },
 
-  /** @param 08-06 Start-up Mode of Overload Protection Operation (OL1) -- Range: 0-1, Default: 0, Manual p.4-47 */
+  /** 08-06 Start-up Mode of Overload Protection Operation (OL1) -- Range: 0-1, Default: 0, Manual p.4-47 */
   '08-06': {
     register: GROUP_08_Protection_Parameters['08-06'],
     kind: ParamKind.UInt16,
@@ -106,7 +109,7 @@ const all = {
     },
   },
 
-  /** @param 08-07 Motor Overload (OL1) Protection Level -- Range: 0-2, Default: 0, Manual p.4-47 */
+  /** 08-07 Motor Overload (OL1) Protection Level -- Range: 0-2, Default: 0, Manual p.4-47 */
   '08-07': {
     register: GROUP_08_Protection_Parameters['08-07'],
     kind: ParamKind.UInt16,
@@ -121,7 +124,7 @@ const all = {
     },
   },
 
-  /** @param 08-08 Automatic Voltage Regulation (AVR) -- Range: 0-1, Default: 0, Manual p.4-47 */
+  /** 08-08 Automatic Voltage Regulation (AVR) -- Range: 0-1, Default: 0, Manual p.4-47 */
   '08-08': {
     register: GROUP_08_Protection_Parameters['08-08'],
     kind: ParamKind.UInt16,
@@ -136,7 +139,7 @@ const all = {
     },
   },
 
-  /** @param 08-09 Selection of Input Phase Loss Protection -- Range: 0-1, Default: 0, Manual p.4-47 */
+  /** 08-09 Selection of Input Phase Loss Protection -- Range: 0-1, Default: 0, Manual p.4-47 */
   '08-09': {
     register: GROUP_08_Protection_Parameters['08-09'],
     kind: ParamKind.UInt16,
@@ -151,7 +154,7 @@ const all = {
     },
   },
 
-  /** @param 08-10 Selection of Output Phase Loss Protection -- Range: 0-1, Default: 0, Manual p.4-48 */
+  /** 08-10 Selection of Output Phase Loss Protection -- Range: 0-1, Default: 0, Manual p.4-48 */
   '08-10': {
     register: GROUP_08_Protection_Parameters['08-10'],
     kind: ParamKind.UInt16,
@@ -166,7 +169,7 @@ const all = {
     },
   },
 
-  /** @param 08-13 Selection of Over-Torque Detection -- Range: 0-2, Default: 0, Manual p.4-48 */
+  /** 08-13 Selection of Over-Torque Detection -- Range: 0-2, Default: 0, Manual p.4-48 */
   '08-13': {
     register: GROUP_08_Protection_Parameters['08-13'],
     kind: ParamKind.UInt16,
@@ -181,7 +184,7 @@ const all = {
     },
   },
 
-  /** @param 08-14 Selection of Over-Torque Operation -- Range: 0-2, Default: 0, Manual p.4-48 */
+  /** 08-14 Selection of Over-Torque Operation -- Range: 0-2, Default: 0, Manual p.4-48 */
   '08-14': {
     register: GROUP_08_Protection_Parameters['08-14'],
     kind: ParamKind.UInt16,
@@ -196,7 +199,7 @@ const all = {
     },
   },
 
-  /** @param 08-15 Level of Over-Torque Detection -- Range: 0~300, Default: 150, Unit: %, Manual p.4-48 */
+  /** 08-15 Level of Over-Torque Detection -- Range: 0~300, Default: 150, Unit: %, Manual p.4-48 */
   '08-15': {
     register: GROUP_08_Protection_Parameters['08-15'],
     kind: ParamKind.UInt16,
@@ -211,7 +214,7 @@ const all = {
     },
   },
 
-  /** @param 08-16 Time of Over-Torque Detection -- Range: 0.0~10.0, Default: 0.1, Unit: Sec, Manual p.4-48 */
+  /** 08-16 Time of Over-Torque Detection -- Range: 0.0~10.0, Default: 0.1, Unit: Sec, Manual p.4-48 */
   '08-16': {
     register: GROUP_08_Protection_Parameters['08-16'],
     kind: ParamKind.Scaled,
@@ -227,7 +230,7 @@ const all = {
     },
   },
 
-  /** @param 08-17 Selection of Low-Torque Detection -- Range: 0-2, Default: 0, Manual p.4-48 */
+  /** 08-17 Selection of Low-Torque Detection -- Range: 0-2, Default: 0, Manual p.4-48 */
   '08-17': {
     register: GROUP_08_Protection_Parameters['08-17'],
     kind: ParamKind.UInt16,
@@ -242,7 +245,7 @@ const all = {
     },
   },
 
-  /** @param 08-18 Selection of Low-Torque Operation -- Range: 0-2, Default: 0, Manual p.4-48 */
+  /** 08-18 Selection of Low-Torque Operation -- Range: 0-2, Default: 0, Manual p.4-48 */
   '08-18': {
     register: GROUP_08_Protection_Parameters['08-18'],
     kind: ParamKind.UInt16,
@@ -257,7 +260,7 @@ const all = {
     },
   },
 
-  /** @param 08-19 Level of Low-Torque Detection -- Range: 0~300, Default: 30, Unit: %, Manual p.4-48 */
+  /** 08-19 Level of Low-Torque Detection -- Range: 0~300, Default: 30, Unit: %, Manual p.4-48 */
   '08-19': {
     register: GROUP_08_Protection_Parameters['08-19'],
     kind: ParamKind.UInt16,
@@ -272,7 +275,7 @@ const all = {
     },
   },
 
-  /** @param 08-20 Time of Low-Torque Detection -- Range: 0.0~10.0, Default: 0.1, Unit: Sec, Manual p.4-49 */
+  /** 08-20 Time of Low-Torque Detection -- Range: 0.0~10.0, Default: 0.1, Unit: Sec, Manual p.4-49 */
   '08-20': {
     register: GROUP_08_Protection_Parameters['08-20'],
     kind: ParamKind.Scaled,
@@ -288,7 +291,7 @@ const all = {
     },
   },
 
-  /** @param 08-21 Limit of Stall Prevention in Acc over Base Speed -- Range: 1~100, Default: 50, Unit: %, Manual p.4-49 */
+  /** 08-21 Limit of Stall Prevention in Acc over Base Speed -- Range: 1~100, Default: 50, Unit: %, Manual p.4-49 */
   '08-21': {
     register: GROUP_08_Protection_Parameters['08-21'],
     kind: ParamKind.UInt16,
@@ -303,7 +306,7 @@ const all = {
     },
   },
 
-  /** @param 08-22 Stall Prevention Detection Time in Operation -- Range: 2~100, Default: 100, Unit: ms, Manual p.4-49 */
+  /** 08-22 Stall Prevention Detection Time in Operation -- Range: 2~100, Default: 100, Unit: ms, Manual p.4-49 */
   '08-22': {
     register: GROUP_08_Protection_Parameters['08-22'],
     kind: ParamKind.UInt16,
@@ -318,7 +321,7 @@ const all = {
     },
   },
 
-  /** @param 08-23 Ground Fault (GF) Selection -- Range: 0-1, Default: 0, Manual p.4-49 */
+  /** 08-23 Ground Fault (GF) Selection -- Range: 0-1, Default: 0, Manual p.4-49 */
   '08-23': {
     register: GROUP_08_Protection_Parameters['08-23'],
     kind: ParamKind.UInt16,
@@ -333,7 +336,7 @@ const all = {
     },
   },
 
-  /** @param 08-24 External Fault Operation Selection -- Range: 0-2, Default: 0, Manual p.4-49 */
+  /** 08-24 External Fault Operation Selection -- Range: 0-2, Default: 0, Manual p.4-49 */
   '08-24': {
     register: GROUP_08_Protection_Parameters['08-24'],
     kind: ParamKind.UInt16,
@@ -348,7 +351,7 @@ const all = {
     },
   },
 
-  /** @param 08-25 Detection Selection of External Fault -- Range: 0-1, Default: 0, Manual p.4-49 */
+  /** 08-25 Detection Selection of External Fault -- Range: 0-1, Default: 0, Manual p.4-49 */
   '08-25': {
     register: GROUP_08_Protection_Parameters['08-25'],
     kind: ParamKind.UInt16,
@@ -363,7 +366,7 @@ const all = {
     },
   },
 
-  /** @param 08-30 Run Permissive Function Selection -- Range: 0-1, Default: 0, Manual p.4-49 */
+  /** 08-30 Run Permissive Function Selection -- Range: 0-1, Default: 0, Manual p.4-49 */
   '08-30': {
     register: GROUP_08_Protection_Parameters['08-30'],
     kind: ParamKind.UInt16,
@@ -378,7 +381,7 @@ const all = {
     },
   },
 
-  /** @param 08-35 Motor Overheating Fault Selection -- Range: 0-3, Default: 0, Manual p.4-49 */
+  /** 08-35 Motor Overheating Fault Selection -- Range: 0-3, Default: 0, Manual p.4-49 */
   '08-35': {
     register: GROUP_08_Protection_Parameters['08-35'],
     kind: ParamKind.UInt16,
@@ -393,7 +396,7 @@ const all = {
     },
   },
 
-  /** @param 08-36 PTC Input Filter Time Constant -- Range: 0.00~5.00, Default: 2.00, Unit: Sec, Manual p.4-49 */
+  /** 08-36 PTC Input Filter Time Constant -- Range: 0.00~5.00, Default: 2.00, Unit: Sec, Manual p.4-49 */
   '08-36': {
     register: GROUP_08_Protection_Parameters['08-36'],
     kind: ParamKind.Scaled,
@@ -409,7 +412,7 @@ const all = {
     },
   },
 
-  /** @param 08-37 Fan Control Function -- Range: 0-2, Default: 0, Manual p.4-49 */
+  /** 08-37 Fan Control Function -- Range: 0-2, Default: 0, Manual p.4-49 */
   '08-37': {
     register: GROUP_08_Protection_Parameters['08-37'],
     kind: ParamKind.UInt16,
@@ -424,7 +427,7 @@ const all = {
     },
   },
 
-  /** @param 08-38 Delay Time of Fan Off -- Range: 0~600, Default: 60, Unit: s, Manual p.4-49 */
+  /** 08-38 Delay Time of Fan Off -- Range: 0~600, Default: 60, Unit: s, Manual p.4-49 */
   '08-38': {
     register: GROUP_08_Protection_Parameters['08-38'],
     kind: ParamKind.UInt16,
@@ -439,7 +442,7 @@ const all = {
     },
   },
 
-  /** @param 08-39 Delay Time of Motor Overheat Protection -- Range: 1~300, Default: 60, Unit: sec, Manual p.4-49 */
+  /** 08-39 Delay Time of Motor Overheat Protection -- Range: 1~300, Default: 60, Unit: sec, Manual p.4-49 */
   '08-39': {
     register: GROUP_08_Protection_Parameters['08-39'],
     kind: ParamKind.UInt16,
@@ -454,7 +457,7 @@ const all = {
     },
   },
 
-  /** @param 08-40 Motor2 Acceleration Stall Prevention Level -- Range: 20~200, Default: HD:150 ND:120, Unit: %, Manual p.4-49 */
+  /** 08-40 Motor2 Acceleration Stall Prevention Level -- Range: 20~200, Default: HD:150 ND:120, Unit: %, Manual p.4-49 */
   '08-40': {
     register: GROUP_08_Protection_Parameters['08-40'],
     kind: ParamKind.UInt16,
@@ -469,7 +472,7 @@ const all = {
     },
   },
 
-  /** @param 08-41 Motor2 Acceleration Stall Prevention Limit -- Range: 1~100, Default: 50, Unit: %, Manual p.4-50 */
+  /** 08-41 Motor2 Acceleration Stall Prevention Limit -- Range: 1~100, Default: 50, Unit: %, Manual p.4-50 */
   '08-41': {
     register: GROUP_08_Protection_Parameters['08-41'],
     kind: ParamKind.UInt16,
@@ -484,7 +487,7 @@ const all = {
     },
   },
 
-  /** @param 08-42 PTC Protection Level -- Range: 0.1~10.0, Default: 0.7, Unit: V, Manual p.4-50 */
+  /** 08-42 PTC Protection Level -- Range: 0.1~10.0, Default: 0.7, Unit: V, Manual p.4-50 */
   '08-42': {
     register: GROUP_08_Protection_Parameters['08-42'],
     kind: ParamKind.Scaled,
@@ -500,7 +503,7 @@ const all = {
     },
   },
 
-  /** @param 08-43 PTC Restart Level -- Range: 0.1~10.0, Default: 0.3, Unit: V, Manual p.4-50 */
+  /** 08-43 PTC Restart Level -- Range: 0.1~10.0, Default: 0.3, Unit: V, Manual p.4-50 */
   '08-43': {
     register: GROUP_08_Protection_Parameters['08-43'],
     kind: ParamKind.Scaled,
@@ -516,7 +519,7 @@ const all = {
     },
   },
 
-  /** @param 08-44 PTC Warning Level -- Range: 0.1~10.0, Default: 0.5, Unit: V, Manual p.4-50 */
+  /** 08-44 PTC Warning Level -- Range: 0.1~10.0, Default: 0.5, Unit: V, Manual p.4-50 */
   '08-44': {
     register: GROUP_08_Protection_Parameters['08-44'],
     kind: ParamKind.Scaled,
@@ -533,7 +536,7 @@ const all = {
   },
 
   /**
-   * @param 08-46 Temperature Agree Level -- Range: 0~254, Default: 0, Unit: degree C, Manual p.4-50
+   * 08-46 Temperature Agree Level -- Range: 0~254, Default: 0, Unit: degree C, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -553,7 +556,7 @@ const all = {
   },
 
   /**
-   * @param 08-47 Temperature Reset Level -- Range: 0~254, Default: 0, Unit: degree C, Manual p.4-50
+   * 08-47 Temperature Reset Level -- Range: 0~254, Default: 0, Unit: degree C, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -573,7 +576,7 @@ const all = {
   },
 
   /**
-   * @param 08-48 Selection of Fire Mode -- Range: 0-1, Default: 0, Manual p.4-50
+   * 08-48 Selection of Fire Mode -- Range: 0-1, Default: 0, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -593,7 +596,7 @@ const all = {
   },
 
   /**
-   * @param 08-49 Multi-Function Input Terminal Status of Fire Mode -- Range: 0-1, Default: 0, Manual p.4-50
+   * 08-49 Multi-Function Input Terminal Status of Fire Mode -- Range: 0-1, Default: 0, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -613,7 +616,7 @@ const all = {
   },
 
   /**
-   * @param 08-50 Multi-Function Terminal Status of Fire Mode -- Bit field, Default: 0000b, Manual p.4-50
+   * 08-50 Multi-Function Terminal Status of Fire Mode -- Bit field, Default: 0000b, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -633,7 +636,7 @@ const all = {
   },
 
   /**
-   * @param 08-51 Motor Speed Setting Source of Fire Mode -- Range: 0-2, Default: 0, Manual p.4-50
+   * 08-51 Motor Speed Setting Source of Fire Mode -- Range: 0-2, Default: 0, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -653,7 +656,7 @@ const all = {
   },
 
   /**
-   * @param 08-52 Motor Speed of Fire Mode -- Range: 0.00~100.00, Default: 100.00, Unit: %, Manual p.4-50
+   * 08-52 Motor Speed of Fire Mode -- Range: 0.00~100.00, Default: 100.00, Unit: %, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -674,7 +677,7 @@ const all = {
   },
 
   /**
-   * @param 08-53 PID Detection Level of Fire Mode -- Range: 0~100, Default: 0, Unit: %, Manual p.4-50
+   * 08-53 PID Detection Level of Fire Mode -- Range: 0~100, Default: 0, Unit: %, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -694,7 +697,7 @@ const all = {
   },
 
   /**
-   * @param 08-54 Delay Time of Fire Mode PID Loss -- Range: 0.0~10.0, Default: 1.0, Unit: s, Manual p.4-50
+   * 08-54 Delay Time of Fire Mode PID Loss -- Range: 0.0~10.0, Default: 1.0, Unit: s, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -715,7 +718,7 @@ const all = {
   },
 
   /**
-   * @param 08-55 PID Feedback Loss Detection Selection of Fire Mode -- Range: 0-2, Default: 1, Manual p.4-50
+   * 08-55 PID Feedback Loss Detection Selection of Fire Mode -- Range: 0-2, Default: 1, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -735,7 +738,7 @@ const all = {
   },
 
   /**
-   * @param 08-56 Detection Level of Fire Mode AI2 Signal -- Range: 0.0~100.0, Default: 80.0, Unit: %, Manual p.4-50
+   * 08-56 Detection Level of Fire Mode AI2 Signal -- Range: 0.0~100.0, Default: 80.0, Unit: %, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -756,7 +759,7 @@ const all = {
   },
 
   /**
-   * @param 08-57 Delay Time of Fire Mode AI2 Signal Loss -- Range: 0.0~10.0, Default: 1.0, Unit: s, Manual p.4-50
+   * 08-57 Delay Time of Fire Mode AI2 Signal Loss -- Range: 0.0~10.0, Default: 1.0, Unit: s, Manual p.4-50
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -777,7 +780,7 @@ const all = {
   },
 
   /**
-   * @param 08-58 Selection of Fire Mode AI2 Signal Loss -- Range: 0-2, Default: 1, Manual p.4-51
+   * 08-58 Selection of Fire Mode AI2 Signal Loss -- Range: 0-2, Default: 1, Manual p.4-51
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -797,7 +800,7 @@ const all = {
   },
 
   /**
-   * @param 08-59 Fire Mode Motor Direction -- Range: 0-1, Default: 0, Manual p.4-51
+   * 08-59 Fire Mode Motor Direction -- Range: 0-1, Default: 0, Manual p.4-51
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -817,7 +820,7 @@ const all = {
   },
 
   /**
-   * @param 08-60 Fire Mode Password -- Range: 00000~65534, Default: 0, Manual p.4-51
+   * 08-60 Fire Mode Password -- Range: 00000~65534, Default: 0, Manual p.4-51
    * @remarks Not listed in the A510 communication addendum (Group 8 register map ends at 08-40).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -837,4 +840,5 @@ const all = {
   },
 } as const satisfies Record<string, ParamConfig<InverterRegisterMeta>>;
 
+/** Parameter configurations for Group 08, keyed by parameter code. */
 export const group08Params = all;

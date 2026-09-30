@@ -1,5 +1,8 @@
 /**
  * Group 13: Maintenance Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-68 to 4-70
  */
 
@@ -610,4 +613,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 13, keyed by parameter code. */
 export const group13Params = all;

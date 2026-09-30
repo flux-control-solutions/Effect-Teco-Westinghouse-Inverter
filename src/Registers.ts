@@ -1,15 +1,15 @@
 /**
  * @fileoverview Modbus register address constants for the Teco/Westinghouse A510 inverter.
  *
- * Defines numeric addresses for all command (write) registers, monitor (read-only) registers,
- * and parameter group registers (Groups 00–22) as defined in the A510 instruction manual.
+ * Defines numeric addresses for command and monitor registers and the listed parameter registers in Groups 00–22.
+ * Some parameter addresses are marked as inferred in the enum comments and need confirmation against device documentation.
  *
  * @module
  */
 
 /**
  * Modbus holding-register addresses for command (write) operations.
- * These registers control the inverter's operation, frequency, torque, and outputs.
+ * These addresses identify command registers for operation, frequency, torque, speed limits, and outputs.
  *
  * @see https://documentation.tesco-drives.com/
  */
@@ -25,7 +25,7 @@ export enum COMMAND_REGISTERS {
 
 /**
  * Modbus holding-register addresses for monitor (read-only) operations.
- * These registers provide real-time status, fault codes, and sensor feedback.
+ * These addresses identify monitor registers for status, fault and warning codes, and feedback values.
  *
  * @see https://documentation.tesco-drives.com/
  */

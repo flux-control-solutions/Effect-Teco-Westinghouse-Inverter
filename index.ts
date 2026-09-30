@@ -1,14 +1,14 @@
 /**
  * # @flux-control/effect-teco-westinghouse-inverter
  *
- * Bidirectional schema transformers for Teco/Westinghouse A510 inverter Modbus parameters.
+ * Effect service, register constants, schemas, errors, and utilities for Teco/Westinghouse A510 Modbus communication.
  *
  * ## Exports
  *
  * - {@link TecoInverterService} — Scoped Effect.Service for A510 communication
  * - {@link COMMAND_REGISTERS} / {@link MONITOR_REGISTERS} — Modbus register address constants
  * - {@link readOnlyEncodeFailure} — Error helper for read-only register writes
- * - All schemas from {@link schemas} (CommandWord, FrequencyCommand, StateMonitor, etc.)
+ * - All schemas and domain types exported by `src/schemas.ts`
  * - {@link bit} — Bit manipulation utility
  *
  * @module

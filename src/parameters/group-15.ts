@@ -1,5 +1,8 @@
 /**
  * Group 15: PLC Monitoring Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual page 4-73
  */
 
@@ -445,4 +448,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 15, keyed by parameter code. */
 export const group15Params = all;

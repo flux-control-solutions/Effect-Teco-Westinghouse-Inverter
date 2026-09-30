@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Checks parameter config decoding, metadata, and group exports.
+ * These tests cover selected groups and examples; they do not validate every config.
+ */
+
 import { describe, expect, it } from 'bun:test';
 
 import { type ParamConfig, fromConfig } from '@flux-control/modbus-schema';

@@ -1,5 +1,8 @@
 /**
  * Group 10: PID Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-53 to 4-56
  */
 
@@ -15,7 +18,7 @@ const p455 = 455 as const;
 const p456 = 456 as const;
 
 const all = {
-  /** @param 10-00 PID Target Value Source Setting -- Range: 1-4, Default: 1, Manual p.4-53 */
+  /** PID Target Value Source Setting -- Range: 1-4, Default: 1, Manual p.4-53 */
   '10-00': {
     register: GROUP_10_PID_Parameters['10-00'],
     kind: ParamKind.UInt16,
@@ -30,7 +33,7 @@ const all = {
     },
   },
 
-  /** @param 10-01 PID Feedback Value Source Setting -- Range: 1-3, Default: 2, Manual p.4-53 */
+  /** PID Feedback Value Source Setting -- Range: 1-3, Default: 2, Manual p.4-53 */
   '10-01': {
     register: GROUP_10_PID_Parameters['10-01'],
     kind: ParamKind.UInt16,
@@ -45,7 +48,7 @@ const all = {
     },
   },
 
-  /** @param 10-02 PID Target Value -- Range: 0.00~100.00, Default: 0.00, Unit: %, Manual p.4-53 */
+  /** PID Target Value -- Range: 0.00~100.00, Default: 0.00, Unit: %, Manual p.4-53 */
   '10-02': {
     register: GROUP_10_PID_Parameters['10-02'],
     kind: ParamKind.Scaled,
@@ -61,7 +64,7 @@ const all = {
     },
   },
 
-  /** @param 10-03 PID Control Mode -- Bit field, Default: 0000b, Manual p.4-53 */
+  /** PID Control Mode -- Bit field, Default: 0000b, Manual p.4-53 */
   '10-03': {
     register: GROUP_10_PID_Parameters['10-03'],
     kind: ParamKind.UInt16,
@@ -76,7 +79,7 @@ const all = {
     },
   },
 
-  /** @param 10-04 Feedback Gain -- Range: 0.01~10.00, Default: 1.00, Unit: -, Manual p.4-53 */
+  /** Feedback Gain -- Range: 0.01~10.00, Default: 1.00, Unit: -, Manual p.4-53 */
   '10-04': {
     register: GROUP_10_PID_Parameters['10-04'],
     kind: ParamKind.Scaled,
@@ -92,7 +95,7 @@ const all = {
     },
   },
 
-  /** @param 10-05 Proportional Gain (P) -- Range: 0.00~10.00, Default: 1.00, Unit: -, Manual p.4-53 */
+  /** Proportional Gain (P) -- Range: 0.00~10.00, Default: 1.00, Unit: -, Manual p.4-53 */
   '10-05': {
     register: GROUP_10_PID_Parameters['10-05'],
     kind: ParamKind.Scaled,
@@ -108,7 +111,7 @@ const all = {
     },
   },
 
-  /** @param 10-06 Integral Time (I) -- Range: 0.00~100.00, Default: 1.00, Unit: s, Manual p.4-53 */
+  /** Integral Time (I) -- Range: 0.00~100.00, Default: 1.00, Unit: s, Manual p.4-53 */
   '10-06': {
     register: GROUP_10_PID_Parameters['10-06'],
     kind: ParamKind.Scaled,
@@ -124,7 +127,7 @@ const all = {
     },
   },
 
-  /** @param 10-07 Differential Time (D) -- Range: 0.00~10.00, Default: 0.00, Unit: s, Manual p.4-53 */
+  /** Differential Time (D) -- Range: 0.00~10.00, Default: 0.00, Unit: s, Manual p.4-53 */
   '10-07': {
     register: GROUP_10_PID_Parameters['10-07'],
     kind: ParamKind.Scaled,
@@ -140,7 +143,7 @@ const all = {
     },
   },
 
-  /** @param 10-08 AI1 Frequency Limit -- Range: 0.00~599.00, Default: 0, Unit: Hz, Manual p.4-53 */
+  /** AI1 Frequency Limit -- Range: 0.00~599.00, Default: 0, Unit: Hz, Manual p.4-53 */
   '10-08': {
     register: GROUP_10_PID_Parameters['10-08'],
     kind: ParamKind.Scaled,
@@ -156,7 +159,7 @@ const all = {
     },
   },
 
-  /** @param 10-09 PID Bias -- Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-53 */
+  /** PID Bias -- Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-53 */
   '10-09': {
     register: GROUP_10_PID_Parameters['10-09'],
     kind: ParamKind.SignedScaled,
@@ -172,7 +175,7 @@ const all = {
     },
   },
 
-  /** @param 10-10 PID Output Delay Time -- Range: 0.00~10.00, Default: 0.00, Unit: s, Manual p.4-53 */
+  /** PID Output Delay Time -- Range: 0.00~10.00, Default: 0.00, Unit: s, Manual p.4-53 */
   '10-10': {
     register: GROUP_10_PID_Parameters['10-10'],
     kind: ParamKind.Scaled,
@@ -188,7 +191,7 @@ const all = {
     },
   },
 
-  /** @param 10-11 PID Feedback Loss Detection Selection -- Range: 0-2, Default: 0, Manual p.4-53 */
+  /** PID Feedback Loss Detection Selection -- Range: 0-2, Default: 0, Manual p.4-53 */
   '10-11': {
     register: GROUP_10_PID_Parameters['10-11'],
     kind: ParamKind.UInt16,
@@ -203,7 +206,7 @@ const all = {
     },
   },
 
-  /** @param 10-12 PID Feedback Loss Detection Level -- Range: 0~100, Default: 0, Unit: %, Manual p.4-53 */
+  /** PID Feedback Loss Detection Level -- Range: 0~100, Default: 0, Unit: %, Manual p.4-53 */
   '10-12': {
     register: GROUP_10_PID_Parameters['10-12'],
     kind: ParamKind.UInt16,
@@ -218,7 +221,7 @@ const all = {
     },
   },
 
-  /** @param 10-13 PID Feedback Loss Detection Time -- Range: 0.0~10.0, Default: 1.0, Unit: s, Manual p.4-53 */
+  /** PID Feedback Loss Detection Time -- Range: 0.0~10.0, Default: 1.0, Unit: s, Manual p.4-53 */
   '10-13': {
     register: GROUP_10_PID_Parameters['10-13'],
     kind: ParamKind.Scaled,
@@ -234,7 +237,7 @@ const all = {
     },
   },
 
-  /** @param 10-14 PID Integral Limit -- Range: 0.0~100.0, Default: 100.0, Unit: %, Manual p.4-53 */
+  /** PID Integral Limit -- Range: 0.0~100.0, Default: 100.0, Unit: %, Manual p.4-53 */
   '10-14': {
     register: GROUP_10_PID_Parameters['10-14'],
     kind: ParamKind.Scaled,
@@ -250,7 +253,7 @@ const all = {
     },
   },
 
-  /** @param 10-15 PID Trim Mode -- Range: 0-2, Default: 0, Manual p.4-53 */
+  /** PID Trim Mode -- Range: 0-2, Default: 0, Manual p.4-53 */
   '10-15': {
     register: GROUP_10_PID_Parameters['10-15'],
     kind: ParamKind.UInt16,
@@ -265,7 +268,7 @@ const all = {
     },
   },
 
-  /** @param 10-16 PID Trim Scale -- Range: 0~100, Default: 100, Unit: %, Manual p.4-53 */
+  /** PID Trim Scale -- Range: 0~100, Default: 100, Unit: %, Manual p.4-53 */
   '10-16': {
     register: GROUP_10_PID_Parameters['10-16'],
     kind: ParamKind.UInt16,
@@ -280,7 +283,7 @@ const all = {
     },
   },
 
-  /** @param 10-17 Start Frequency of PID Sleep -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-54 */
+  /** Start Frequency of PID Sleep -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-54 */
   '10-17': {
     register: GROUP_10_PID_Parameters['10-17'],
     kind: ParamKind.Scaled,
@@ -296,7 +299,7 @@ const all = {
     },
   },
 
-  /** @param 10-18 Delay Time of PID Sleep -- Range: 0.0~255.5, Default: 0.0, Unit: s, Manual p.4-54 */
+  /** Delay Time of PID Sleep -- Range: 0.0~255.5, Default: 0.0, Unit: s, Manual p.4-54 */
   '10-18': {
     register: GROUP_10_PID_Parameters['10-18'],
     kind: ParamKind.Scaled,
@@ -312,7 +315,7 @@ const all = {
     },
   },
 
-  /** @param 10-19 Frequency of PID Waking up -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-54 */
+  /** Frequency of PID Waking up -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-54 */
   '10-19': {
     register: GROUP_10_PID_Parameters['10-19'],
     kind: ParamKind.Scaled,
@@ -328,7 +331,7 @@ const all = {
     },
   },
 
-  /** @param 10-20 Delay Time of PID Waking up -- Range: 0.0~255.5, Default: 0.0, Unit: s, Manual p.4-54 */
+  /** Delay Time of PID Waking up -- Range: 0.0~255.5, Default: 0.0, Unit: s, Manual p.4-54 */
   '10-20': {
     register: GROUP_10_PID_Parameters['10-20'],
     kind: ParamKind.Scaled,
@@ -344,7 +347,7 @@ const all = {
     },
   },
 
-  /** @param 10-23 PID Output Limit -- Range: 0.0~100.0, Default: 100.0, Unit: %, Manual p.4-54 */
+  /** PID Output Limit -- Range: 0.0~100.0, Default: 100.0, Unit: %, Manual p.4-54 */
   '10-23': {
     register: GROUP_10_PID_Parameters['10-23'],
     kind: ParamKind.Scaled,
@@ -360,7 +363,7 @@ const all = {
     },
   },
 
-  /** @param 10-24 PID Output Gain -- Range: 0.0~25.0, Default: 1.0, Unit: -, Manual p.4-54 */
+  /** PID Output Gain -- Range: 0.0~25.0, Default: 1.0, Unit: -, Manual p.4-54 */
   '10-24': {
     register: GROUP_10_PID_Parameters['10-24'],
     kind: ParamKind.Scaled,
@@ -376,7 +379,7 @@ const all = {
     },
   },
 
-  /** @param 10-25 PID Reversal Output Selection -- Range: 0-1, Default: 0, Manual p.4-54 */
+  /** PID Reversal Output Selection -- Range: 0-1, Default: 0, Manual p.4-54 */
   '10-25': {
     register: GROUP_10_PID_Parameters['10-25'],
     kind: ParamKind.UInt16,
@@ -391,7 +394,7 @@ const all = {
     },
   },
 
-  /** @param 10-26 PID Target Acceleration/Deceleration Time -- Range: 0.0~25.5, Default: 0.0, Unit: s, Manual p.4-54 */
+  /** PID Target Acceleration/Deceleration Time -- Range: 0.0~25.5, Default: 0.0, Unit: s, Manual p.4-54 */
   '10-26': {
     register: GROUP_10_PID_Parameters['10-26'],
     kind: ParamKind.Scaled,
@@ -407,7 +410,7 @@ const all = {
     },
   },
 
-  /** @param 10-27 PID Feedback Display Bias -- Range: 0~9999, Default: 0, Manual p.4-54 */
+  /** PID Feedback Display Bias -- Range: 0~9999, Default: 0, Manual p.4-54 */
   '10-27': {
     register: GROUP_10_PID_Parameters['10-27'],
     kind: ParamKind.UInt16,
@@ -422,7 +425,7 @@ const all = {
     },
   },
 
-  /** @param 10-29 PID Sleep Selection -- Range: 0-2, Default: 1, Manual p.4-54 */
+  /** PID Sleep Selection -- Range: 0-2, Default: 1, Manual p.4-54 */
   '10-29': {
     register: GROUP_10_PID_Parameters['10-29'],
     kind: ParamKind.UInt16,
@@ -437,7 +440,7 @@ const all = {
     },
   },
 
-  /** @param 10-30 Upper Limit of PID Target -- Range: 0.0~100.0, Default: 100.0, Unit: %, Manual p.4-54 */
+  /** Upper Limit of PID Target -- Range: 0.0~100.0, Default: 100.0, Unit: %, Manual p.4-54 */
   '10-30': {
     register: GROUP_10_PID_Parameters['10-30'],
     kind: ParamKind.Scaled,
@@ -453,7 +456,7 @@ const all = {
     },
   },
 
-  /** @param 10-31 Lower Limit of PID Target -- Range: 0.0~100.0, Default: 0.0, Unit: %, Manual p.4-54 */
+  /** Lower Limit of PID Target -- Range: 0.0~100.0, Default: 0.0, Unit: %, Manual p.4-54 */
   '10-31': {
     register: GROUP_10_PID_Parameters['10-31'],
     kind: ParamKind.Scaled,
@@ -469,7 +472,7 @@ const all = {
     },
   },
 
-  /** @param 10-33 Maximum Value of PID Feedback -- Range: 1~10000, Default: 999, Manual p.4-54 */
+  /** Maximum Value of PID Feedback -- Range: 1~10000, Default: 999, Manual p.4-54 */
   '10-33': {
     register: GROUP_10_PID_Parameters['10-33'],
     kind: ParamKind.UInt16,
@@ -484,7 +487,7 @@ const all = {
     },
   },
 
-  /** @param 10-34 PID Decimal Width -- Range: 0~4, Default: 1, Manual p.4-54 */
+  /** PID Decimal Width -- Range: 0~4, Default: 1, Manual p.4-54 */
   '10-34': {
     register: GROUP_10_PID_Parameters['10-34'],
     kind: ParamKind.UInt16,
@@ -499,7 +502,7 @@ const all = {
     },
   },
 
-  /** @param 10-35 PID Unit -- Range: 0~24, Default: 0, Manual p.4-54 */
+  /** PID Unit -- Range: 0~24, Default: 0, Manual p.4-54 */
   '10-35': {
     register: GROUP_10_PID_Parameters['10-35'],
     kind: ParamKind.UInt16,
@@ -514,7 +517,7 @@ const all = {
     },
   },
 
-  /** @param 10-36 Proportional Gain 2 (P) -- Range: 0.00~10.00, Default: 3.00, Unit: -, Manual p.4-55 */
+  /** Proportional Gain 2 (P) -- Range: 0.00~10.00, Default: 3.00, Unit: -, Manual p.4-55 */
   '10-36': {
     register: GROUP_10_PID_Parameters['10-36'],
     kind: ParamKind.Scaled,
@@ -530,7 +533,7 @@ const all = {
     },
   },
 
-  /** @param 10-37 Integral Time 2 (I) -- Range: 0.00~100.00, Default: 0.50, Unit: Sec, Manual p.4-55 */
+  /** Integral Time 2 (I) -- Range: 0.00~100.00, Default: 0.50, Unit: Sec, Manual p.4-55 */
   '10-37': {
     register: GROUP_10_PID_Parameters['10-37'],
     kind: ParamKind.Scaled,
@@ -546,7 +549,7 @@ const all = {
     },
   },
 
-  /** @param 10-38 Differential Time 2 (D) -- Range: 0.00~10.00, Default: 0.00, Unit: Sec, Manual p.4-55 */
+  /** Differential Time 2 (D) -- Range: 0.00~10.00, Default: 0.00, Unit: Sec, Manual p.4-55 */
   '10-38': {
     register: GROUP_10_PID_Parameters['10-38'],
     kind: ParamKind.Scaled,
@@ -562,7 +565,7 @@ const all = {
     },
   },
 
-  /** @param 10-39 Output Frequency Setting of PID Disconnection -- Range: 0.00~599.00, Default: 30.00, Unit: Hz, Manual p.4-55 */
+  /** Output Frequency Setting of PID Disconnection -- Range: 0.00~599.00, Default: 30.00, Unit: Hz, Manual p.4-55 */
   '10-39': {
     register: GROUP_10_PID_Parameters['10-39'],
     kind: ParamKind.Scaled,
@@ -578,7 +581,7 @@ const all = {
     },
   },
 
-  /** @param 10-40 Selection of PID Sleep Compensation Frequency -- Range: 0-1, Default: 0, Manual p.4-55 */
+  /** Selection of PID Sleep Compensation Frequency -- Range: 0-1, Default: 0, Manual p.4-55 */
   '10-40': {
     register: GROUP_10_PID_Parameters['10-40'],
     kind: ParamKind.UInt16,
@@ -593,7 +596,7 @@ const all = {
     },
   },
 
-  /** @param 10-41 PID Mode Switch -- Range: 0-1, Default: 0, Manual p.4-55 */
+  /** PID Mode Switch -- Range: 0-1, Default: 0, Manual p.4-55 */
   '10-41': {
     register: GROUP_10_PID_Parameters['10-41'],
     kind: ParamKind.UInt16,
@@ -609,7 +612,7 @@ const all = {
   },
 
   /**
-   * @param 10-47 Proportional Gain 3 (P) -- Range: 0.00~10.00, Default: 1.00, Unit: -, Manual p.4-56
+   * Proportional Gain 3 (P) -- Range: 0.00~10.00, Default: 1.00, Unit: -, Manual p.4-56
    * @remarks Not listed in the A510 communication addendum (Group 10 register map ends at 10-41).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -630,7 +633,7 @@ const all = {
   },
 
   /**
-   * @param 10-48 Integral Time 3 (I) -- Range: 0.00~100.00, Default: 1.00, Unit: Sec, Manual p.4-56
+   * Integral Time 3 (I) -- Range: 0.00~100.00, Default: 1.00, Unit: Sec, Manual p.4-56
    * @remarks Not listed in the A510 communication addendum (Group 10 register map ends at 10-41).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -651,7 +654,7 @@ const all = {
   },
 
   /**
-   * @param 10-49 Differential Time 3 (D) -- Range: 0.00~10.00, Default: 0.00, Unit: Sec, Manual p.4-56
+   * Differential Time 3 (D) -- Range: 0.00~10.00, Default: 0.00, Unit: Sec, Manual p.4-56
    * @remarks Not listed in the A510 communication addendum (Group 10 register map ends at 10-41).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -672,4 +675,5 @@ const all = {
   },
 } as const satisfies Record<string, ParamConfig<InverterRegisterMeta>>;
 
+/** Parameter configurations for Group 10, keyed by parameter code. */
 export const group10Params = all;

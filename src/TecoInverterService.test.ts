@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Tests transaction batching, register updates, client reuse, and shutdown.
+ *
+ * Mock transport tests verify service behavior without hardware. They do not
+ * prove that a physical drive accepts every planned register span.
+ */
 import { describe, expect, test } from 'bun:test';
 
 import { ModbusTransportError, SerialTransportService } from '@flux-control/effect-modbus-rs';
@@ -10,11 +16,13 @@ import { TecoInverterService, type TecoInverterOptions } from './TecoInverterSer
 const deviceId = 1;
 
 /**
- * A drive on a mock bus, with a count of the transactions that reached it.
+ * Creates a mock bus and counts attempted Modbus operations.
  *
- * The fault hook runs once per operation attempt, before the operation is
- * carried out, so counting the calls and injecting nothing counts transactions
- * without changing what any of them does.
+ * The fault hook runs before each operation. It injects no fault, so each
+ * operation proceeds normally.
+ *
+ * @param options - Service shutdown and batching settings.
+ * @returns A transaction counter and a scoped runner for service effects.
  */
 const mockBus = (options: TecoInverterOptions) => {
   const counter = { transactions: 0 };
@@ -39,10 +47,11 @@ const mockBus = (options: TecoInverterOptions) => {
 };
 
 /**
- * Reads every parameter of Group 00 at once.
+ * Reads all Group 00 parameters concurrently.
  *
- * The concurrency is the point: a window collects what overlaps it, and reads
- * awaited one after another never overlap.
+ * Concurrent reads overlap the collection window and can share register spans.
+ *
+ * @returns The decoded values in parameter iteration order.
  */
 const readGroup00 = Effect.gen(function* () {
   const inverter = yield* TecoInverterService;

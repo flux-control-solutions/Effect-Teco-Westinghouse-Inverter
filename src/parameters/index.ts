@@ -1,14 +1,12 @@
 /**
- * @fileoverview Re-exports all parameter groups (Groups 00–22).
+ * @fileoverview Re-exports the configured A510 parameter groups (Groups 00–22).
  *
- * Each group is a record of {@link ParamConfig} objects keyed by parameter code
- * (e.g. `p00_01`, `p01_00`). The schema engine lives in the `@flux-control/modbus-schema`
- * package; configs are converted into {@link ParamCallableOfEntry} bundles by
- * {@link TecoInverterService} at service construction time.
+ * Each group is a record of parameter configs keyed by code, such as `00-01`.
+ * The service turns these configs into per-device read and update operations.
  *
  * @example
- * import { group00 } from "./parameters";
- * const config = group00.p00_01; // ParamConfig
+ * import { group00 } from './parameters';
+ * const config = group00['00-01'];
  *
  * @module
  */

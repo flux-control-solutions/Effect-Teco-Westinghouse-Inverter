@@ -1,5 +1,8 @@
 /**
  * Group 21: Torque And Position Control Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-82 to 4-85
  */
 
@@ -595,4 +598,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 21, keyed by parameter code. */
 export const group21Params = all;

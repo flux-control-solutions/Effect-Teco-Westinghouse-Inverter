@@ -1,5 +1,8 @@
 /**
  * Group 04: External Analog Input and Output Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-34 to 4-36
  *
  * Parameter                                | Range                        | Default       | Unit | Page
@@ -38,7 +41,7 @@ const p435 = 435 as const;
 const p436 = 436 as const;
 
 const all = {
-  /** @param 04-00 AI Input Signal Type — Range: 0-5, Default: 1, Manual p.4-34 */
+  /** 04-00 AI Input Signal Type — Range: 0-5, Default: 1, Manual p.4-34 */
   '04-00': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-00'],
     kind: ParamKind.UInt16,
@@ -53,7 +56,7 @@ const all = {
     },
   },
 
-  /** @param 04-01 AI1 Signal Scanning and Filtering Time — Range: 0.00~2.00, Default: 0.03, Unit: s, Manual p.4-34 */
+  /** 04-01 AI1 Signal Scanning and Filtering Time — Range: 0.00~2.00, Default: 0.03, Unit: s, Manual p.4-34 */
   '04-01': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-01'],
     kind: ParamKind.Scaled,
@@ -69,7 +72,7 @@ const all = {
     },
   },
 
-  /** @param 04-02 AI1 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-34 */
+  /** 04-02 AI1 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-34 */
   '04-02': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-02'],
     kind: ParamKind.Scaled,
@@ -85,7 +88,7 @@ const all = {
     },
   },
 
-  /** @param 04-03 AI1 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-34 */
+  /** 04-03 AI1 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-34 */
   '04-03': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-03'],
     kind: ParamKind.SignedScaled,
@@ -101,7 +104,7 @@ const all = {
     },
   },
 
-  /** @param 04-04 Negative AI — Range: 0-1, Default: 0, Manual p.4-34 */
+  /** 04-04 Negative AI — Range: 0-1, Default: 0, Manual p.4-34 */
   '04-04': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-04'],
     kind: ParamKind.UInt16,
@@ -116,7 +119,7 @@ const all = {
     },
   },
 
-  /** @param 04-05 AI2 Function Setting — Range: 0-17, Default: 0, Manual p.4-34 */
+  /** 04-05 AI2 Function Setting — Range: 0-17, Default: 0, Manual p.4-34 */
   '04-05': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-05'],
     kind: ParamKind.UInt16,
@@ -131,7 +134,7 @@ const all = {
     },
   },
 
-  /** @param 04-06 AI2 Signal Scanning and Filtering Time — Range: 0.00~2.00, Default: 0.03, Unit: s, Manual p.4-35 */
+  /** 04-06 AI2 Signal Scanning and Filtering Time — Range: 0.00~2.00, Default: 0.03, Unit: s, Manual p.4-35 */
   '04-06': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-06'],
     kind: ParamKind.Scaled,
@@ -147,7 +150,7 @@ const all = {
     },
   },
 
-  /** @param 04-07 AI2 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-35 */
+  /** 04-07 AI2 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-35 */
   '04-07': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-07'],
     kind: ParamKind.Scaled,
@@ -163,7 +166,7 @@ const all = {
     },
   },
 
-  /** @param 04-08 AI2 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-35 */
+  /** 04-08 AI2 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-35 */
   '04-08': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-08'],
     kind: ParamKind.SignedScaled,
@@ -179,7 +182,7 @@ const all = {
     },
   },
 
-  /** @param 04-09 AI Input Signal Type of I/O card — Range: 0-2, Default: 0, Manual p.4-35 */
+  /** 04-09 AI Input Signal Type of I/O card — Range: 0-2, Default: 0, Manual p.4-35 */
   '04-09': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-09'],
     kind: ParamKind.UInt16,
@@ -194,7 +197,7 @@ const all = {
     },
   },
 
-  /** @param 04-10 AI3 Function Setting — Range: 0-17 (same as 04-05), Default: 10, Manual p.4-35 */
+  /** 04-10 AI3 Function Setting — Range: 0-17 (same as 04-05), Default: 10, Manual p.4-35 */
   '04-10': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-10'],
     kind: ParamKind.UInt16,
@@ -209,7 +212,7 @@ const all = {
     },
   },
 
-  /** @param 04-11 AO1 Function Setting — Range: 0-28, Default: 0, Manual p.4-35 */
+  /** 04-11 AO1 Function Setting — Range: 0-28, Default: 0, Manual p.4-35 */
   '04-11': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-11'],
     kind: ParamKind.UInt16,
@@ -224,7 +227,7 @@ const all = {
     },
   },
 
-  /** @param 04-12 AO1 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-35 */
+  /** 04-12 AO1 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-35 */
   '04-12': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-12'],
     kind: ParamKind.Scaled,
@@ -240,7 +243,7 @@ const all = {
     },
   },
 
-  /** @param 04-13 AO1 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-35 */
+  /** 04-13 AO1 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-35 */
   '04-13': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-13'],
     kind: ParamKind.SignedScaled,
@@ -256,7 +259,7 @@ const all = {
     },
   },
 
-  /** @param 04-16 AO2 Function Setting — Range: 0-28 (same as 04-11), Default: 3, Manual p.4-36 */
+  /** 04-16 AO2 Function Setting — Range: 0-28 (same as 04-11), Default: 3, Manual p.4-36 */
   '04-16': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-16'],
     kind: ParamKind.UInt16,
@@ -271,7 +274,7 @@ const all = {
     },
   },
 
-  /** @param 04-17 AO2 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-36 */
+  /** 04-17 AO2 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-36 */
   '04-17': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-17'],
     kind: ParamKind.Scaled,
@@ -287,7 +290,7 @@ const all = {
     },
   },
 
-  /** @param 04-18 AO2 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-36 */
+  /** 04-18 AO2 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-36 */
   '04-18': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-18'],
     kind: ParamKind.SignedScaled,
@@ -303,7 +306,7 @@ const all = {
     },
   },
 
-  /** @param 04-19 AO Output Signal Type — Range: 0-3, Default: 0, Manual p.4-36 */
+  /** 04-19 AO Output Signal Type — Range: 0-3, Default: 0, Manual p.4-36 */
   '04-19': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-19'],
     kind: ParamKind.UInt16,
@@ -318,7 +321,7 @@ const all = {
     },
   },
 
-  /** @param 04-20 Filter Time of AO Signal Scan — Range: 0.00~0.50, Default: 0.00, Unit: s, Manual p.4-36 */
+  /** 04-20 Filter Time of AO Signal Scan — Range: 0.00~0.50, Default: 0.00, Unit: s, Manual p.4-36 */
   '04-20': {
     register: GROUP_04_External_Analog_Input_and_Output_Parameters['04-20'],
     kind: ParamKind.Scaled,
@@ -335,7 +338,7 @@ const all = {
   },
 
   /**
-   * @param 04-21 AI3 Signal Scanning and Filtering Time — Range: 0.00~2.00, Default: 0.03, Unit: s, Manual p.4-36
+   * 04-21 AI3 Signal Scanning and Filtering Time — Range: 0.00~2.00, Default: 0.03, Unit: s, Manual p.4-36
    * @remarks Not listed in the A510 communication addendum (Group 4 register map ends at 04-12).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -356,7 +359,7 @@ const all = {
   },
 
   /**
-   * @param 04-22 AI3 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-36
+   * 04-22 AI3 Gain — Range: 0.0~1000.0, Default: 100.0, Unit: %, Manual p.4-36
    * @remarks Not listed in the A510 communication addendum (Group 4 register map ends at 04-12).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -377,7 +380,7 @@ const all = {
   },
 
   /**
-   * @param 04-23 AI3 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-36
+   * 04-23 AI3 Bias — Range: -100.0~100.0, Default: 0, Unit: %, Manual p.4-36
    * @remarks Not listed in the A510 communication addendum (Group 4 register map ends at 04-12).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -398,4 +401,5 @@ const all = {
   },
 } as const satisfies Record<string, ParamConfig<InverterRegisterMeta>>;
 
+/** Parameter configurations for Group 04, keyed by parameter code. */
 export const group04Params = all;

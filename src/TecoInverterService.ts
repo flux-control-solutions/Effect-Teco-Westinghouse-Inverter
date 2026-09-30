@@ -1,46 +1,26 @@
 /**
- * @fileoverview Effect service for communicating with Teco/Westinghouse A510 inverters over Modbus.
+ * @fileoverview Scoped Effect service for Teco/Westinghouse A510-family inverters.
  *
- * Exposes a scoped {@link TecoInverterService} that manages a Modbus client pool per device.
- * Provides typed access to:
- * - **Command registers** (write): operation, frequency, torque, speed limit, analog/digital out
- * - **Monitor registers** (read): state, errors, warnings, frequency, current, voltage
- * - **Parameter groups** (read/write): all Groups 00–22 via {@link TecoInverterService.parameters}
- *
- * Supports both RTU and ASCII transport variants. Includes an automatic safe-shutdown finalizer
- * that stops the motor on service exit.
+ * The service uses a provided `SerialTransportService` and acquires one batching
+ * client per accessed unit. It exposes typed command, monitor, and parameter
+ * operations. By default, scope closure attempts to stop each acquired drive.
+ * Stop failures are logged and ignored.
  *
  * ## Transaction batching
  *
- * Every accessor here names one register, which on its own means one
- * transaction per register: reading all 49 parameters of Group 00 costs 49
- * round trips, and a round trip is the dominant cost on a half-duplex bus.
- *
- * The transport can decide the transactions instead. Given a read window, reads
- * that are in flight at the same moment are collected and packed into the
- * fewest spans that cover them, so the same 49 parameters cost 3 — one span per
- * contiguous run of the group. The accessors do not change shape; what changes
- * is what they cost.
- *
- * Two conditions, and both are needed:
- *
- * - **A window.** {@link TecoInverterOptions.reads}`.window` is `0` by default,
- *   which issues every read on its own. Nothing is held back until it is asked
- *   for.
- * - **Concurrency.** A window collects what overlaps it. Reads awaited one
- *   after another never overlap, whatever the window is, and each pays the
- *   window in latency. Read a group with
- *   `Effect.forEach(…, { concurrency: 'unbounded' })`.
+ * A read window collects overlapping reads so the transport can plan register
+ * spans. Sequentially awaited reads do not overlap and cannot batch. The default
+ * window is zero, so reads do not wait for collection.
  *
  * @example
  * import { Effect, Layer } from "effect";
- * import { TecoInverterService } from "./src/TecoInverterService";
+ * import { FrequencyHz, TecoInverterService } from "@flux-control/effect-teco-westinghouse-inverter";
  * import { SerialTransportService } from "@flux-control/effect-modbus-rs";
  *
  * const program = Effect.gen(function* () {
  *   const inverter = yield* TecoInverterService;
  *   const freq = yield* inverter.frequencyCommand(1).read();
- *   yield* inverter.frequencyCommand(1).update(50.0);
+ *   yield* inverter.frequencyCommand(1).update(FrequencyHz.make(50));
  * });
  *
  * const layer = Layer.provideMerge(
@@ -48,7 +28,7 @@
  *   SerialTransportService.fromRtu({ portPath: "/dev/ttyUSB0", baudRate: 19200 }),
  * );
  *
- * program.pipe(Effect.provide(layer), BunRuntime.runMain);
+ * await Effect.runPromise(program.pipe(Effect.provide(layer), Effect.scoped));
  *
  * @module
  */
@@ -136,32 +116,26 @@ const paramRegisterDefs: ReadonlyArray<{
 );
 
 /**
- * How this service uses the bus.
+ * Settings for shutdown stop attempts and Modbus transaction batching.
  *
- * Every default leaves timing as it was before batching existed: nothing is
- * held back and no write is suppressed. The windows are what turn the
- * per-register accessors into packed transactions, and they are opt-in because
- * the right value is a property of the bus rather than of the drive.
+ * Windows are opt-in because useful values depend on bus timing. Read windows
+ * collect overlapping reads. Write windows delay writes so nearby writes can
+ * be batched.
  */
 export interface TecoInverterOptions {
   /**
-   * Whether to stop every drive this service spoke to when the scope closes.
+   * Whether scope cleanup attempts to clear the run flag on each acquired drive.
    *
    * @defaultValue `true`
    */
   readonly safeShutdown?: boolean;
-  /** How reads reach the bus. */
+  /** Read collection and span-planning settings. */
   readonly reads?: {
     /**
      * How long reads are collected before the spans are issued.
      *
-     * The window opens on the first arrival and expires on time, so it bounds
-     * the latency a reader pays. A useful size is on the order of one
-     * transaction on the bus in question: shorter than a transaction and it
-     * collects nothing, much longer and every reader waits for a batch it did
-     * not need. A short frame at 19200 baud is roughly 5 ms to 15 ms, but that
-     * is arithmetic rather than a measurement — time one on the segment before
-     * settling on a value.
+     * The window starts with the first arrival. Concurrent reads can share a span.
+     * Sequential reads each wait for their own window. Choose a window from measured bus timing.
      *
      * @defaultValue `0` — every read is issued on its own
      */
@@ -169,39 +143,28 @@ export interface TecoInverterOptions {
     /**
      * Unrequested registers the planner may read to join two spans into one.
      *
-     * Group 00 occupies three contiguous runs separated by gaps of 2 and 7
-     * registers, so the default reads it in three transactions. A gap wide
-     * enough to bridge them reads it in one.
-     *
-     * CAUTION: a drive may answer `ILLEGAL_DATA_ADDRESS` for a register it
-     * does not implement, and the exception takes down the whole span,
-     * including the addresses that would have answered. Read one span across a
-     * known gap on the drive in question before raising this.
-     *
-     * The value covers the whole unit rather than one parameter group, because
-     * one unit has one batch. Groups whose gaps differ have to settle on the
-     * smallest tolerance among them.
+     * An unsupported gap address can fail the entire span with `ILLEGAL_DATA_ADDRESS`.
+     * Check the drive's supported addresses before increasing this unit-wide setting.
      *
      * @defaultValue `0` — a span holds only contiguous requested addresses
      */
     readonly maxGap?: number;
   };
-  /** How writes reach the bus. */
+  /** Write collection and cache settings. */
   readonly writes?: {
     /**
      * How long a write is held so that neighbouring writes travel with it.
      * Each arrival restarts the window.
      *
-     * `update()` resolves once the value has reached the drive, so a window is
-     * latency on every command. Worth setting only where several registers are
-     * commanded together.
+     * A write window adds latency. A pending write can be replaced by a newer
+     * write for the same register, so update completion does not prove that
+     * this particular value reached the drive.
      *
      * @defaultValue `0` — every write is issued on its own
      */
     readonly window?: Duration.Input;
     /**
-     * Ceiling on the total hold, so a register commanded faster than the
-     * window still reaches the wire.
+     * Maximum hold before a flush. Bounds the delay when updates continuously restart the window.
      *
      * @defaultValue four times `window`
      */
@@ -210,14 +173,9 @@ export interface TecoInverterOptions {
      * Whether to drop a write whose value the drive is believed to already
      * hold.
      *
-     * Off, because an A510 has a keypad. The record covers what this process
-     * wrote, and a parameter changed at the panel leaves it describing a value
-     * the drive no longer holds — after which it suppresses exactly the write
-     * that would restore it. Worth turning on for a drive with no local
-     * operator, where it saves a write per unchanged register.
-     *
-     * The stop issued at shutdown is never suppressed: it clears the record
-     * first.
+     * Disabled by default because keypad changes can make cached values stale.
+     * Enable only when the application controls external changes and cache invalidation.
+     * Shutdown invalidates the drive's cache before attempting its stop command.
      *
      * @defaultValue `false`
      */
@@ -255,21 +213,18 @@ const describeDebounce = (
 /**
  * Effect service for interacting with a Teco/Westinghouse A510 inverter over Modbus.
  *
- * Instantiate with {@link TecoInverterService.make} and provide the appropriate
- * transport layer ({@link RtuTransportService} or {@link AsciiTransportService}).
+ * Create a layer with {@link TecoInverterService.make} and provide a
+ * `SerialTransportService` layer configured for RTU or ASCII transport.
  *
- * @see TecoInverterService.make
+ * The service owns its per-unit client acquisitions and shutdown finalizers.
+ * The transport layer must remain available for Modbus operations.
  */
 const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptions = {}) {
   const transport = yield* SerialTransportService;
   const safeShutdown = options.safeShutdown ?? true;
 
   /**
-   * One configuration, built once and shared by every drive on this bus.
-   *
-   * The transport keeps one batching client per unit — two batches on one unit
-   * coalesce neither — and rejects a second declaration of a unit. So these
-   * options are settled here rather than assembled at each call site.
+   * Share one configuration because the transport accepts one batching client declaration per unit.
    */
   const cacheWrites = options.writes?.cache ?? false;
   const batching: BatchingClientOptions = {
@@ -285,19 +240,12 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   };
 
   /**
-   * Brings one drive to its safe state, through a client already held: the
-   * motor stopped, every other bit of the command word left as it was.
-   *
-   * What a safe state *is* belongs to this package. That it is a drive rather
-   * than some other device on the same bus is not asked at shutdown — only a
-   * drive ever had a client built for it here.
+   * Attempts to clear the run flag through the acquired client.
+   * Preserves other modeled command flags from the immediate read.
    */
   const stopWith = (client: BatchingModbusClient, deviceId: number) =>
     Effect.gen(function* () {
-      // A stop must reach the wire even when the write cache believes the
-      // register already holds it. That belief covers what this process wrote,
-      // and a drive started from its keypad holds something the record never
-      // saw.
+      // Keypad changes can invalidate cached values. Prevent the cache from suppressing the stop.
       client.cache?.invalidate(deviceId);
       const current = yield* S.decodeCommandWord(
         yield* client.readNow(COMMAND_REGISTERS.OPERATION_COMMAND),
@@ -310,14 +258,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     });
 
   /**
-   * Clears the record of a drive before a write, when this service does not cache writes.
-   *
-   * The client can have a write cache that another component declared. That
-   * cache drops a write whose value it believes the drive holds. A value changed
-   * at the keypad makes that belief wrong, and the dropped write then leaves the
-   * keypad value on the drive. The client applies the cache when the batch
-   * flushes, and a read does not record a value, so clearing the record here
-   * lets the write reach the drive.
+   * Invalidates a reused client's cache when this service disables write caching.
+   * This prevents stale keypad values from suppressing an update.
    */
   const forgetUnlessCached = (client: BatchingModbusClient, deviceId: number) =>
     Effect.sync(() => {
@@ -327,11 +269,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
   /**
    * Gets the batching client for a drive from the transport.
    *
-   * The transport keeps a declaration for its full scope, so the unit can
-   * already have a client when this service has none in its cache. This
-   * occurs when an earlier service over the same open transport closed, or
-   * when a first lookup ended after its declaration completed. In both cases
-   * the existing client is recovered and used.
+   * The transport can retain a declaration from an earlier service or lookup.
+   * Reuse that client because another declaration for the same unit is rejected.
    *
    * The existing client keeps the options of its declaration. The service
    * checks two of them and logs one warning that lists each difference:
@@ -340,15 +279,9 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
    * - The write cache must be present when `writes.cache` is on, and absent
    *   when it is off.
    *
-   * The client does not show its planner limits, such as `reads.maxGap`, or its
-   * retry policy, so the service cannot check them. A difference in these
-   * settings, or in the two checked options, means that another component
-   * declared the unit.
-   *
-   * The service uses the existing client in all cases, because one unit has
-   * one batch. When `writes.cache` is off and the existing client has a cache,
-   * the service clears the record of the unit before each write. A write then
-   * reaches the drive even when the cache holds a wrong belief.
+   * Planner limits and retry settings are not inspectable.
+   * The service uses the client even when options differ.
+   * If write caching is disabled here, updates invalidate any existing client cache.
    */
   const declareClient = (deviceId: number): Effect.Effect<BatchingModbusClient, ModbusError> =>
     transport.withBatchingClient(deviceId, batching).pipe(
@@ -394,24 +327,15 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
    * application does not have to recreate the transport with the service.
    */
   const clients = yield* ScopedCache.makeWith({
-    // The highest unit ID an RTU segment can address. No bus can reach this
-    // capacity, so no drive is evicted — and stopped — while it is still in use.
+    // RTU unit IDs fit within this capacity, so valid active drives are not evicted.
     capacity: 247,
-    // A declaration that failed describes the link at one moment, not the
-    // drive. Holding that result would make a momentary drop permanent for
-    // every later operation on that drive.
+    // Failed acquisitions must expire so later operations can retry the declaration.
     timeToLive: (exit) => (Exit.isSuccess(exit) ? Duration.infinity : Duration.zero),
     lookup: (deviceId: number) =>
       Effect.acquireRelease(
         declareClient(deviceId),
-        // A stopped motor is the safe state of this device, and this runs while
-        // the bus is still open. Each drive carries its own finalizer, so a
-        // drive that cannot be reached costs only itself: the error is logged
-        // and every other drive still gets its turn.
-        //
-        // The client is the one this entry holds, never a fresh lookup. A
-        // lookup on a closing cache is interrupted, which would leave the motor
-        // running.
+        // Log stop failures so other acquired drives still receive a stop attempt.
+        // Use the acquired client because a lookup can be interrupted during cache shutdown.
         (client) =>
           safeShutdown
             ? stopWith(client, deviceId).pipe(
@@ -453,11 +377,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
       const read = () => readHolding(address, decode)(deviceId);
       const update = Effect.fnUntraced(function* (patch: P) {
         const client = yield* clientFor(deviceId);
-        // `readNow` rather than the collected read. Two fibers patching one
-        // register can lose an update, and the gap between the read and the
-        // write is how wide that race is — a window would widen it by its own
-        // length. Nothing is given up by not waiting: `readNow` still joins a
-        // batch that is already open.
+        // An immediate read avoids adding collection delay to this non-atomic read-modify-write pair.
+        // Concurrent patches to the same register can still overwrite each other.
         const current = yield* decode(yield* client.readNow(address));
         const merged = merge(current, patch);
         const encoded = yield* encode(merged);
@@ -617,7 +538,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
      * Register 0x2501.
      *
      * Uses read-modify-write semantics: only the fields present in the patch
-     * are written back, preserving the current state of unchanged bits.
+     * change. The encoded word includes all modeled flags from the immediate read.
+     * Concurrent updates are not atomic.
      *
      * @example
      * // Run forward
@@ -630,28 +552,31 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
     operationCommand,
     /**
      * Set the target output frequency in Hz.
-     * Register 0x2502. Range 0.00–599.00 Hz (wire: 0–59900, 0.01 Hz/count).
+     * Register 0x2502. Range 0.00–600.00 Hz (wire: 0–60000, 0.01 Hz/count).
      *
      * @example
-     * yield* inverter.frequencyCommand(1).update(50.0); // 50 Hz
+     * import { FrequencyHz } from '@flux-control/effect-teco-westinghouse-inverter';
+     * yield* inverter.frequencyCommand(1).update(FrequencyHz.make(50));
      * const freq = yield* inverter.frequencyCommand(1).read(); // FrequencyHz
      */
     frequencyCommand,
     /**
-     * Set the torque limit / torque command as a percentage of rated torque.
-     * Register 0x2503. Range –100.0–100.0% (wire: UInt16 two's complement, ÷81.92).
+     * Set the torque limit or torque command as a percentage of rated torque.
+     * Register 0x2503. Range –100.0–100.0%, using signed Int16 scaling with factor 1 / 81.92.
      *
      * @example
-     * yield* inverter.torqueCommand(1).update(75.0); // 75% torque
+     * import { TorquePercent } from '@flux-control/effect-teco-westinghouse-inverter';
+     * yield* inverter.torqueCommand(1).update(TorquePercent.make(75));
      * const torque = yield* inverter.torqueCommand(1).read(); // TorquePercent
      */
     torqueCommand,
     /**
      * Set the speed limit as a percentage of nominal speed.
-     * Register 0x2504. Range –120–120% (wire: UInt16 two's complement, 1:1 mapping).
+     * Register 0x2504. Range –120–120%. The schema encodes signed wire values.
      *
      * @example
-     * yield* inverter.speedLimitCommand(1).update(100); // 100% speed limit
+     * import { SpeedLimitPercent } from '@flux-control/effect-teco-westinghouse-inverter';
+     * yield* inverter.speedLimitCommand(1).update(SpeedLimitPercent.make(100));
      */
     speedLimitCommand,
     /**
@@ -659,7 +584,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
      * Register 0x2505. Range 0.00–10.00 V (wire: 0–1000, 0.01 V/count).
      *
      * @example
-     * yield* inverter.analogOut1Command(1).update(5.0); // 5.00 V
+     * import { Voltage } from '@flux-control/effect-teco-westinghouse-inverter';
+     * yield* inverter.analogOut1Command(1).update(Voltage.make(5));
      */
     analogOut1Command,
     /**
@@ -667,7 +593,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
      * Register 0x2506. Range 0.00–10.00 V (wire: 0–1000, 0.01 V/count).
      *
      * @example
-     * yield* inverter.analogOut2Command(1).update(7.5); // 7.50 V
+     * import { Voltage } from '@flux-control/effect-teco-westinghouse-inverter';
+     * yield* inverter.analogOut2Command(1).update(Voltage.make(7.5));
      */
     analogOut2Command,
     /**
@@ -675,7 +602,8 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
      * Register 0x2507.
      *
      * Uses read-modify-write semantics: only the fields present in the patch
-     * are written back, preserving the current state of unchanged bits.
+     * change. Other modeled flags keep their values from the immediate read.
+     * Concurrent updates are not atomic.
      *
      * @example
      * yield* inverter.digitalOutCommand(1).update({ ry1: true, ry2: false });
@@ -710,7 +638,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
      */
     digitalInStateMonitor,
     /**
-     * Read the frequency command currently in effect (after ramps, limits, etc.).
+     * Read the frequency command reported by the drive.
      * Register 0x2523. Returns a FrequencyHz value.
      *
      * @example
@@ -799,15 +727,15 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
      */
     a510CheckMonitor,
     /**
-     * Typed access to all parameter groups (Groups 00–22).
+     * Typed access to configured parameters in Groups 00–22.
      *
      * Each group is a record of parameter callables keyed by parameter code
-     * (e.g. `inverter.parameters.group00.p00_01`). Each callable accepts a
+     * (for example, `inverter.parameters.group00['00-01']`). Each callable accepts a
      * `deviceId` and returns an object with `.read()` and `.update()` operations.
      *
      * @example
-     * const value = yield* inverter.parameters.group00.p00_01(1).read();
-     * yield* inverter.parameters.group00.p00_01(1).update(2);
+     * const value = yield* inverter.parameters.group00['00-01'](1).read();
+     * yield* inverter.parameters.group00['00-01'](1).update('Forward');
      *
      * @internal Excluded from generated docs: the full per-register literal
      * type here spans hundreds of parameters and renders as a multi-MB page.
@@ -845,7 +773,7 @@ const makeTecoInverter = Effect.fnUntraced(function* (options: TecoInverterOptio
 /**
  * The service shape produced by the scoped constructor.
  *
- * v4's `Context.Service` takes the shape as a type parameter rather than
+ * Effect v4 `Context.Service` takes the shape as a type parameter rather than
  * inferring it from a constructor option, so it is derived here.
  */
 export type TecoInverterApi = Effect.Success<ReturnType<typeof makeTecoInverter>>;
@@ -862,10 +790,11 @@ const registerAddresses = (registers: Record<string, string | number>): number[]
     .filter(([name]) => !Number.isInteger(Number(name)))
     .map(([, address]) => Number(address));
 
+/** Service identifier and constructors for typed A510 register access. */
 export class TecoInverterService extends Context.Service<TecoInverterService, TecoInverterApi>()(
   'TecoInverterService',
 ) {
-  /** Scoped constructor effect. Wrapped by {@link TecoInverterService.make}. */
+  /** Scoped constructor effect used by {@link TecoInverterService.make}. */
   static readonly makeScoped = makeTecoInverter;
 
   /**
@@ -873,7 +802,8 @@ export class TecoInverterService extends Context.Service<TecoInverterService, Te
    *
    * Requires a {@link SerialTransportService} to be provided.
    *
-   * @param options - Safe shutdown, and how reads and writes reach the bus.
+   * @param options Shutdown stop attempts, read and write windows, and write caching.
+   * @returns A layer that provides this service and requires `SerialTransportService`.
    */
   static readonly make = (
     options: TecoInverterOptions = {},
@@ -883,11 +813,12 @@ export class TecoInverterService extends Context.Service<TecoInverterService, Te
   /**
    * Constructs a {@link SlaveDeviceDefinition} suitable for use with a mock Modbus transport.
    *
-   * Registers all command registers (0x2501–0x2507), monitor registers (0x2520–0x252F),
-   * and all parameter group registers (Groups 00–22) with default value `0`.
+   * Registers all command and monitor addresses and all parameter registers.
+   * Command and monitor registers default to zero. Parameter registers use
+   * defaults derived from their metadata and wire scaling.
    *
-   * @param deviceId - The Modbus unit/slave ID this device should respond to
-   * @returns A {@link SlaveDeviceDefinition} ready to be passed to a mock transport layer
+   * @param deviceId - Modbus unit ID for the mock device.
+   * @returns A device definition for a mock Modbus transport. Parameter defaults come from metadata and wire scaling.
    *
    * @example
    * import { SerialTransportService } from "@flux-control/effect-modbus-rs";

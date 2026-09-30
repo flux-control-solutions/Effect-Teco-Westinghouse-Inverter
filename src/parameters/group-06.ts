@@ -1,5 +1,8 @@
 /**
  * Group 06: Automatic Program Operation Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-40 to 4-43
  *
  * Three families:
@@ -57,7 +60,7 @@ const timeMeta = (stage: number, page: number) => ({
 
 // ── Simple UInt16 parameters ───────────────────────────────
 
-/** @param 06-00 Automatic Operation Mode Selection — Range: 0-6, Default: 0, Manual p.4-40 */
+/** 06-00 Automatic Operation Mode Selection — Range: 0-6, Default: 0, Manual p.4-40 */
 const all = {
   '06-00': {
     register: GROUP_06_Automatic_Program_Operation_Parameters['06-00'],
@@ -349,4 +352,5 @@ const all = {
   },
 } as const satisfies Record<string, ParamConfig<InverterRegisterMeta>>;
 
+/** Parameter configurations for Group 06, keyed by parameter code. */
 export const group06Params = all;
