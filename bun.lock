@@ -5,7 +5,7 @@
     "": {
       "name": "@flux-control/effect-teco-westinghouse-inverter",
       "dependencies": {
-        "@flux-control/modbus-schema": "^0.2.0",
+        "@flux-control/modbus-schema": "^0.3.0",
       },
       "devDependencies": {
         "@changesets/cli": "^2.31.1",
@@ -88,7 +88,7 @@
 
     "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.8.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^4.0.0-rc.118" } }, "sha512-uZxx5c1WK/Hpazi95m8FG9uhTTOuHf4Zn34djExbOwso3JFqe9TMCAeQXum4Zn2zdFDGsNVsxu7wlmB7pSXAsg=="],
 
-    "@flux-control/modbus-schema": ["@flux-control/modbus-schema@0.2.3", "", { "peerDependencies": { "effect": "^4.0.0-rc.109" } }, "sha512-6eO6rVER55TRqlo2iYchFONHfsLfM8chJSJ3L8LHKl9isc4a9qnfrF3S9emWnhL6chMql5R6FcxQaIyKM12wYw=="],
+    "@flux-control/modbus-schema": ["@flux-control/modbus-schema@0.3.0", "", { "peerDependencies": { "effect": "^4.0.0-rc.118" } }, "sha512-noFpPNKLOQwdlkpfV7jY/mucL2GomujNuuWvoHeTqpyrImGCuWwuniJivlANPoLvc5vAeuFrleKs/bgPPhas1A=="],
 
     "@inquirer/external-editor": ["@inquirer/external-editor@1.0.3", "", { "dependencies": { "chardet": "^2.1.1", "iconv-lite": "^0.7.0" }, "peerDependencies": { "@types/node": ">=18" }, "optionalPeers": ["@types/node"] }, "sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA=="],
 
