@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
-import { SerialTransportService } from '@flux-control/effect-modbus-rs';
-import { Effect, Layer, Logger, Tracer } from 'effect';
+import { ModbusTransportError, SerialTransportService } from '@flux-control/effect-modbus-rs';
+import { Effect, Exit, Layer, Logger, Tracer } from 'effect';
 
 import { COMMAND_REGISTERS } from './Registers';
 import { CommandWordPatch, encodeFrequencyCommand, FrequencyHz } from './schemas';
@@ -290,6 +290,45 @@ describe('a service over a transport that outlives it', () => {
     );
 
     expect(result).toEqual({ first: true, second: { stopped: false, running: true } });
+  });
+
+  test('a failed first lookup is not kept for the next call', async () => {
+    // The first lookup declares the unit on the transport and then fails. The
+    // cache must not keep the failure, so the second call runs a new lookup.
+    // That lookup recovers the existing declaration and does not declare again.
+    let calls = 0;
+    const transportThatFailsOnce = Layer.effect(
+      SerialTransportService,
+      Effect.gen(function* () {
+        const inner = yield* SerialTransportService;
+        return {
+          ...inner,
+          withBatchingClient: (
+            ...args: Parameters<typeof inner.withBatchingClient>
+          ): ReturnType<typeof inner.withBatchingClient> =>
+            Effect.flatMap(inner.withBatchingClient(...args), (client) => {
+              calls += 1;
+              if (calls > 1) return Effect.succeed(client);
+              const message = 'Synthetic failure after the declaration';
+              return Effect.fail(new ModbusTransportError({ cause: new Error(message), message }));
+            }),
+        };
+      }),
+    ).pipe(Layer.provide(sharedBus()));
+
+    const result = await Effect.runPromise(
+      withService(
+        Effect.gen(function* () {
+          const inverter = yield* TecoInverterService;
+          const first = yield* Effect.exit(inverter.operationCommand(deviceId).read());
+          const second = yield* inverter.operationCommand(deviceId).read();
+          return { firstFailed: Exit.isFailure(first), running: second.run };
+        }),
+      ).pipe(Effect.provide(transportThatFailsOnce)),
+    );
+
+    expect(result).toEqual({ firstFailed: true, running: false });
+    expect(calls).toBe(1);
   });
 
   /** Declares the drive with `declared`, then reads it through a service with `options`. */
