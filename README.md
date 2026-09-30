@@ -22,15 +22,15 @@ For generated API documentation, see [GitHub Pages](https://flux-control-solutio
 
 ```bash
 bun add @flux-control/effect-teco-westinghouse-inverter
-bun add effect@4.0.0-rc.109 @flux-control/effect-modbus-rs@^0.7.0
+bun add effect@4.0.0-rc.118 @flux-control/effect-modbus-rs@^0.8.0
 ```
 
 The current package requires these peer dependencies:
 
 | Package                          | Version         |
 | -------------------------------- | --------------- |
-| `effect`                         | `^4.0.0-rc.109` |
-| `@flux-control/effect-modbus-rs` | `^0.7.0`        |
+| `effect`                         | `^4.0.0-rc.118` |
+| `@flux-control/effect-modbus-rs` | `^0.8.0`        |
 
 Effect v3 is not compatible with this package.
 The application and this package must share the transport dependency.
