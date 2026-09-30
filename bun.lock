@@ -11,7 +11,7 @@
         "@changesets/cli": "^2.31.1",
         "@effect/language-service": "0.87.2",
         "@effect/platform-bun": "^4.0.0-rc.118",
-        "@flux-control/effect-modbus-rs": "^0.7.0",
+        "@flux-control/effect-modbus-rs": "^0.8.0",
         "@oxlint/plugins": "1.76.0",
         "@types/bun": "latest",
         "effect": "4.0.0-rc.118",
@@ -22,7 +22,7 @@
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@flux-control/effect-modbus-rs": "^0.7.0",
+        "@flux-control/effect-modbus-rs": "^0.8.0",
         "effect": "^4.0.0-rc.118",
       },
     },
@@ -86,7 +86,7 @@
 
     "@fallow-cli/win32-x64-msvc": ["@fallow-cli/win32-x64-msvc@2.104.0", "", { "os": "win32", "cpu": "x64" }, "sha512-irER9HuZ9DXunl4H9RNsWQ9AvGmHs/Zp1+Yr2ATmgSNumERPXvgXa2IiGtCvKFqI72639TlhUj8+2WqIXZ54WQ=="],
 
-    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.7.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^4.0.0-rc.109" } }, "sha512-4lK5mhell+OOdb6I/6YXGhIDX3ClYmCjZVpZGS7RpyGWjqUrjbTnipcrNxh6YfDVZ84Ef0/bMJf4yYHMQGiYPQ=="],
+    "@flux-control/effect-modbus-rs": ["@flux-control/effect-modbus-rs@0.8.0", "", { "dependencies": { "modbus-rs": "0.16.1" }, "peerDependencies": { "effect": "^4.0.0-rc.118" } }, "sha512-uZxx5c1WK/Hpazi95m8FG9uhTTOuHf4Zn34djExbOwso3JFqe9TMCAeQXum4Zn2zdFDGsNVsxu7wlmB7pSXAsg=="],
 
     "@flux-control/modbus-schema": ["@flux-control/modbus-schema@0.2.3", "", { "peerDependencies": { "effect": "^4.0.0-rc.109" } }, "sha512-6eO6rVER55TRqlo2iYchFONHfsLfM8chJSJ3L8LHKl9isc4a9qnfrF3S9emWnhL6chMql5R6FcxQaIyKM12wYw=="],
 
