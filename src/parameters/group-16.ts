@@ -1,5 +1,8 @@
 /**
  * Group 16: LCD Function Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-74 to 4-77
  */
 
@@ -502,4 +505,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 16, keyed by parameter code. */
 export const group16Params = all;

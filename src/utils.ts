@@ -1,13 +1,13 @@
 /**
- * @fileoverview Bit manipulation utilities for the Teco/Westinghouse A510 inverter library.
+ * @fileoverview Small bit manipulation utilities for register words.
  * @module
  */
 
 /**
- * Creates a bitmask for a single bit at position `n`.
+ * Creates a bitmask by shifting the value 1 left by `n` positions.
  *
- * @param n - Zero-based bit position (0 = least-significant bit)
- * @returns A unsigned 16-bit integer with only bit `n` set
+ * @param n - Zero-based bit position. The function does not validate this value.
+ * @returns The signed 32-bit JavaScript bitwise result. Values outside the unsigned 16-bit range are possible.
  *
  * @example
  * bit(0)  // 0b0001 = 1

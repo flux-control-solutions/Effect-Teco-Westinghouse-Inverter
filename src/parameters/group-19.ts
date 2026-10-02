@@ -1,5 +1,8 @@
 /**
  * Group 19: Wobble Frequency Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-79 to 4-80
  */
 
@@ -130,4 +133,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 19, keyed by parameter code. */
 export const group19Params = all;

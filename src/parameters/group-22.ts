@@ -1,5 +1,8 @@
 /**
  * Group 22: PM Motor Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-85 to 4-88
  */
 
@@ -427,4 +430,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 22, keyed by parameter code. */
 export const group22Params = all;

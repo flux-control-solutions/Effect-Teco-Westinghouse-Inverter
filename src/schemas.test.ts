@@ -1,3 +1,4 @@
+/** Tests wire codecs, domain constraints, bit layouts, and read-only schema behavior. */
 import { describe, expect, test } from 'bun:test';
 
 import { Effect, Schema } from 'effect';

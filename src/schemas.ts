@@ -1,10 +1,9 @@
 /**
- * @fileoverview Bidirectional Effect schemas for A510 command and monitor register values.
+ * @fileoverview Domain schemas and codecs for A510 command and monitor registers.
  *
  * Provides {@link Schema} transformations between wire-format Modbus register values
- * (UInt16/Int16) and domain types (FrequencyHz, TorquePercent, etc.) with proper
- * scaling factors. Monitor registers are decode-only; command registers support
- * both encode and decode.
+ * (UInt16/Int16) and domain types with register-specific scaling. Command schemas encode and decode;
+ * monitor schemas marked read-only reject encoding. Lookup schemas return fallback labels for unknown codes.
  *
  * Schema factories from {@link @flux-control/modbus-schema} are reused:
  * - **Scaled commands/monitors** → {@link makeScaledParam} / {@link makeSignedScaledParam}
@@ -37,42 +36,49 @@ export { Int16, UInt16 } from '@flux-control/modbus-schema';
 // ── Domain brands (device-side) ──────────────────────────
 
 export type FrequencyHz = number & Brand.Brand<'FrequencyHz'>;
+/** Frequency value in hertz, limited to 0–600. */
 export const FrequencyHz = Schema.Number.check(
   Schema.isGreaterThanOrEqualTo(0),
   Schema.isLessThanOrEqualTo(600),
 ).pipe(Schema.brand('FrequencyHz'));
 
 export type TorquePercent = number & Brand.Brand<'TorquePercent'>;
+/** Torque percentage, limited to -100–100. */
 export const TorquePercent = Schema.Number.check(
   Schema.isGreaterThanOrEqualTo(-100),
   Schema.isLessThanOrEqualTo(100),
 ).pipe(Schema.brand('TorquePercent'));
 
 export type SpeedLimitPercent = number & Brand.Brand<'SpeedLimitPercent'>;
+/** Speed limit percentage, limited to -120–120. */
 export const SpeedLimitPercent = Schema.Number.check(
   Schema.isGreaterThanOrEqualTo(-120),
   Schema.isLessThanOrEqualTo(120),
 ).pipe(Schema.brand('SpeedLimitPercent'));
 
 export type Voltage = number & Brand.Brand<'Voltage'>;
+/** Voltage in volts, limited to 0–10. */
 export const Voltage = Schema.Number.check(
   Schema.isGreaterThanOrEqualTo(0),
   Schema.isLessThanOrEqualTo(10),
 ).pipe(Schema.brand('Voltage'));
 
 export type DCBusVoltage = number & Brand.Brand<'DCBusVoltage'>;
+/** DC bus voltage in volts, limited to 0–1000. */
 export const DCBusVoltage = Schema.Number.check(
   Schema.isGreaterThanOrEqualTo(0),
   Schema.isLessThanOrEqualTo(1000),
 ).pipe(Schema.brand('DCBusVoltage'));
 
 export type CurrentAmps = number & Brand.Brand<'CurrentAmps'>;
+/** Current in amperes, limited to 0–6553.5. */
 export const CurrentAmps = Schema.Number.check(
   Schema.isGreaterThanOrEqualTo(0),
   Schema.isLessThanOrEqualTo(6553.5),
 ).pipe(Schema.brand('CurrentAmps'));
 
 export type AnalogInputPercent = number & Brand.Brand<'AnalogInputPercent'>;
+/** Analog input percentage, limited to 0–100. */
 export const AnalogInputPercent = Schema.Number.check(
   Schema.isGreaterThanOrEqualTo(0),
   Schema.isLessThanOrEqualTo(100),
@@ -182,7 +188,7 @@ export type CommandWordPatch = InstanceType<typeof CommandWordPatch>;
 export const mergeCommandWordPatch = _commandWordParam.merge;
 
 /**
- * Intent-level constructors for the operation command word.
+ * Builds common operation command words without requiring callers to set each flag.
  */
 export const commandWord = {
   stop: (): CommandWordFlags => CommandWordFlags.stop,

@@ -1,5 +1,8 @@
 /**
  * Group 18: Slip Compensation Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual page 4-79
  */
 
@@ -113,4 +116,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 18, keyed by parameter code. */
 export const group18Params = all;

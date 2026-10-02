@@ -1,5 +1,8 @@
 /**
  * Group 01: V/F Control Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-22 to 4-24
  *
  * Parameter                           | Range              | Default       | Unit | Register
@@ -42,7 +45,7 @@ const p423 = 423 as const;
 const p424 = 424 as const;
 
 const all = {
-  /** @param 01-00 V/F Curve Selection — Range: 0~FF (hex), Default: F, Manual p.4-22 */
+  /** 01-00 V/F Curve Selection — Range: 0~FF (hex), Default: F, Manual p.4-22 */
   '01-00': {
     register: GROUP_01_VF_Control_Parameters['01-00'],
     kind: ParamKind.UInt16,
@@ -57,7 +60,7 @@ const all = {
     },
   },
 
-  /** @param 01-02 Maximum Output Frequency of Motor 1 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-22 */
+  /** 01-02 Maximum Output Frequency of Motor 1 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-22 */
   '01-02': {
     register: GROUP_01_VF_Control_Parameters['01-02'],
     kind: ParamKind.Scaled,
@@ -73,7 +76,7 @@ const all = {
     },
   },
 
-  /** @param 01-03 Maximum Output Voltage of Motor 1 — Range: 0.1~255.0 (230V), Default: -, Unit: V, Manual p.4-22 */
+  /** 01-03 Maximum Output Voltage of Motor 1 — Range: 0.1~255.0 (230V), Default: -, Unit: V, Manual p.4-22 */
   '01-03': {
     register: GROUP_01_VF_Control_Parameters['01-03'],
     kind: ParamKind.Scaled,
@@ -89,7 +92,7 @@ const all = {
     },
   },
 
-  /** @param 01-04 Middle Output Frequency 2 of Motor 1 — Range: 0.0~599.0, Default: 0.0, Unit: Hz, Manual p.4-22 */
+  /** 01-04 Middle Output Frequency 2 of Motor 1 — Range: 0.0~599.0, Default: 0.0, Unit: Hz, Manual p.4-22 */
   '01-04': {
     register: GROUP_01_VF_Control_Parameters['01-04'],
     kind: ParamKind.Scaled,
@@ -105,7 +108,7 @@ const all = {
     },
   },
 
-  /** @param 01-05 Middle Output Voltage 2 of Motor 1 — Range: 0.0~255.0 (230V), Default: 0.0, Unit: V, Manual p.4-22 */
+  /** 01-05 Middle Output Voltage 2 of Motor 1 — Range: 0.0~255.0 (230V), Default: 0.0, Unit: V, Manual p.4-22 */
   '01-05': {
     register: GROUP_01_VF_Control_Parameters['01-05'],
     kind: ParamKind.Scaled,
@@ -121,7 +124,7 @@ const all = {
     },
   },
 
-  /** @param 01-06 Middle Output Frequency 1 of Motor 1 — Range: 0.0~599.0, Default: 3.0, Unit: Hz, Manual p.4-22 */
+  /** 01-06 Middle Output Frequency 1 of Motor 1 — Range: 0.0~599.0, Default: 3.0, Unit: Hz, Manual p.4-22 */
   '01-06': {
     register: GROUP_01_VF_Control_Parameters['01-06'],
     kind: ParamKind.Scaled,
@@ -137,7 +140,7 @@ const all = {
     },
   },
 
-  /** @param 01-07 Middle Output Voltage 1 of Motor 1 — Range: 0.0~255.0 (230V), Default: ***** (KVA dependent), Unit: V, Manual p.4-22 */
+  /** 01-07 Middle Output Voltage 1 of Motor 1 — Range: 0.0~255.0 (230V), Default: ***** (KVA dependent), Unit: V, Manual p.4-22 */
   '01-07': {
     register: GROUP_01_VF_Control_Parameters['01-07'],
     kind: ParamKind.Scaled,
@@ -153,7 +156,7 @@ const all = {
     },
   },
 
-  /** @param 01-08 Minimum Output Frequency of Motor 1 — Range: 0.0~599.0, Default: VF:1.5 / SLV:0.6 / SV:0.1, Unit: Hz, Manual p.4-22 */
+  /** 01-08 Minimum Output Frequency of Motor 1 — Range: 0.0~599.0, Default: VF:1.5 / SLV:0.6 / SV:0.1, Unit: Hz, Manual p.4-22 */
   '01-08': {
     register: GROUP_01_VF_Control_Parameters['01-08'],
     kind: ParamKind.Scaled,
@@ -169,7 +172,7 @@ const all = {
     },
   },
 
-  /** @param 01-09 Minimum Output Voltage of Motor 1 — Range: 0.0~255.0 (230V), Default: 8.3 (230V) / 15.0 (460V), Unit: V, Manual p.4-22 */
+  /** 01-09 Minimum Output Voltage of Motor 1 — Range: 0.0~255.0 (230V), Default: 8.3 (230V) / 15.0 (460V), Unit: V, Manual p.4-22 */
   '01-09': {
     register: GROUP_01_VF_Control_Parameters['01-09'],
     kind: ParamKind.Scaled,
@@ -185,7 +188,7 @@ const all = {
     },
   },
 
-  /** @param 01-10 Torque Compensation Gain — Range: 0.0~2.0, Default: 0.5, Unit: -, Manual p.4-22 */
+  /** 01-10 Torque Compensation Gain — Range: 0.0~2.0, Default: 0.5, Unit: -, Manual p.4-22 */
   '01-10': {
     register: GROUP_01_VF_Control_Parameters['01-10'],
     kind: ParamKind.Scaled,
@@ -201,7 +204,7 @@ const all = {
     },
   },
 
-  /** @param 01-11 Selection of Torque Compensation Mode — Range: 0-1, Default: 0, Manual p.4-23 */
+  /** 01-11 Selection of Torque Compensation Mode — Range: 0-1, Default: 0, Manual p.4-23 */
   '01-11': {
     register: GROUP_01_VF_Control_Parameters['01-11'],
     kind: ParamKind.Enum,
@@ -220,7 +223,7 @@ const all = {
     },
   },
 
-  /** @param 01-12 Base Frequency of Motor 1 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-23 */
+  /** 01-12 Base Frequency of Motor 1 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-23 */
   '01-12': {
     register: GROUP_01_VF_Control_Parameters['01-12'],
     kind: ParamKind.Scaled,
@@ -236,7 +239,7 @@ const all = {
     },
   },
 
-  /** @param 01-13 Base Output Voltage of Motor 1 — Range: 0.0~255.0 (230V), Default: -, Unit: V, Manual p.4-23 */
+  /** 01-13 Base Output Voltage of Motor 1 — Range: 0.0~255.0 (230V), Default: -, Unit: V, Manual p.4-23 */
   '01-13': {
     register: GROUP_01_VF_Control_Parameters['01-13'],
     kind: ParamKind.Scaled,
@@ -252,7 +255,7 @@ const all = {
     },
   },
 
-  /** @param 01-14 Input Voltage Setting — Range: 155.0~255.0 (230V), Default: -, Unit: V, Manual p.4-23 */
+  /** 01-14 Input Voltage Setting — Range: 155.0~255.0 (230V), Default: -, Unit: V, Manual p.4-23 */
   '01-14': {
     register: GROUP_01_VF_Control_Parameters['01-14'],
     kind: ParamKind.Scaled,
@@ -268,7 +271,7 @@ const all = {
     },
   },
 
-  /** @param 01-15 Torque Compensation Time — Range: 0~10000, Default: 200, Unit: ms, Manual p.4-23 */
+  /** 01-15 Torque Compensation Time — Range: 0~10000, Default: 200, Unit: ms, Manual p.4-23 */
   '01-15': {
     register: GROUP_01_VF_Control_Parameters['01-15'],
     kind: ParamKind.UInt16,
@@ -283,7 +286,7 @@ const all = {
     },
   },
 
-  /** @param 01-16 Maximum Output Frequency of Motor 2 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-23 */
+  /** 01-16 Maximum Output Frequency of Motor 2 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-23 */
   '01-16': {
     register: GROUP_01_VF_Control_Parameters['01-16'],
     kind: ParamKind.Scaled,
@@ -299,7 +302,7 @@ const all = {
     },
   },
 
-  /** @param 01-17 Maximum Output Voltage of Motor 2 — Range: 0.1~255.0 (230V), Default: -, Unit: V, Manual p.4-23 */
+  /** 01-17 Maximum Output Voltage of Motor 2 — Range: 0.1~255.0 (230V), Default: -, Unit: V, Manual p.4-23 */
   '01-17': {
     register: GROUP_01_VF_Control_Parameters['01-17'],
     kind: ParamKind.Scaled,
@@ -315,7 +318,7 @@ const all = {
     },
   },
 
-  /** @param 01-18 Middle Output Frequency 2 of Motor 2 — Range: 0.0~599.0, Default: 0.0, Unit: Hz, Manual p.4-23 */
+  /** 01-18 Middle Output Frequency 2 of Motor 2 — Range: 0.0~599.0, Default: 0.0, Unit: Hz, Manual p.4-23 */
   '01-18': {
     register: GROUP_01_VF_Control_Parameters['01-18'],
     kind: ParamKind.Scaled,
@@ -331,7 +334,7 @@ const all = {
     },
   },
 
-  /** @param 01-19 Middle Output Voltage 2 of Motor 2 — Range: 0.0~255.0 (230V), Default: 0.0, Unit: V, Manual p.4-23 */
+  /** 01-19 Middle Output Voltage 2 of Motor 2 — Range: 0.0~255.0 (230V), Default: 0.0, Unit: V, Manual p.4-23 */
   '01-19': {
     register: GROUP_01_VF_Control_Parameters['01-19'],
     kind: ParamKind.Scaled,
@@ -347,7 +350,7 @@ const all = {
     },
   },
 
-  /** @param 01-20 Middle Output Frequency 1 of Motor 2 — Range: 0.0~599.0, Default: 3.0, Unit: Hz, Manual p.4-23 */
+  /** 01-20 Middle Output Frequency 1 of Motor 2 — Range: 0.0~599.0, Default: 3.0, Unit: Hz, Manual p.4-23 */
   '01-20': {
     register: GROUP_01_VF_Control_Parameters['01-20'],
     kind: ParamKind.Scaled,
@@ -363,7 +366,7 @@ const all = {
     },
   },
 
-  /** @param 01-21 Middle Output Voltage 1 of Motor 2 — Range: 0.0~255.0 (230V), Default: KVA, Unit: V, Manual p.4-23 */
+  /** 01-21 Middle Output Voltage 1 of Motor 2 — Range: 0.0~255.0 (230V), Default: KVA, Unit: V, Manual p.4-23 */
   '01-21': {
     register: GROUP_01_VF_Control_Parameters['01-21'],
     kind: ParamKind.Scaled,
@@ -379,7 +382,7 @@ const all = {
     },
   },
 
-  /** @param 01-22 Minimum Output Frequency of Motor 2 — Range: 0.0~599.0, Default: 1.5, Unit: Hz, Manual p.4-23 */
+  /** 01-22 Minimum Output Frequency of Motor 2 — Range: 0.0~599.0, Default: 1.5, Unit: Hz, Manual p.4-23 */
   '01-22': {
     register: GROUP_01_VF_Control_Parameters['01-22'],
     kind: ParamKind.Scaled,
@@ -395,7 +398,7 @@ const all = {
     },
   },
 
-  /** @param 01-23 Minimum Output Voltage of Motor 2 — Range: 0.0~255.0 (230V), Default: KVA, Unit: V, Manual p.4-23 */
+  /** 01-23 Minimum Output Voltage of Motor 2 — Range: 0.0~255.0 (230V), Default: KVA, Unit: V, Manual p.4-23 */
   '01-23': {
     register: GROUP_01_VF_Control_Parameters['01-23'],
     kind: ParamKind.Scaled,
@@ -411,7 +414,7 @@ const all = {
     },
   },
 
-  /** @param 01-24 Base Frequency of Motor 2 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-23 */
+  /** 01-24 Base Frequency of Motor 2 — Range: 4.8~599.0, Default: 50.0/60.0, Unit: Hz, Manual p.4-23 */
   '01-24': {
     register: GROUP_01_VF_Control_Parameters['01-24'],
     kind: ParamKind.Scaled,
@@ -427,7 +430,7 @@ const all = {
     },
   },
 
-  /** @param 01-25 Base Output Voltage of Motor 2 — Range: 0.0~255.0 (230V), Default: -, Unit: V, Manual p.4-24 */
+  /** 01-25 Base Output Voltage of Motor 2 — Range: 0.0~255.0 (230V), Default: -, Unit: V, Manual p.4-24 */
   '01-25': {
     register: GROUP_01_VF_Control_Parameters['01-25'],
     kind: ParamKind.Scaled,
@@ -443,7 +446,7 @@ const all = {
     },
   },
 
-  /** @param 01-26 V/F Curve Selection of Motor 2 — Range: 0~FF (hex), Default: F, Manual p.4-24 */
+  /** 01-26 V/F Curve Selection of Motor 2 — Range: 0~FF (hex), Default: F, Manual p.4-24 */
   '01-26': {
     register: GROUP_01_VF_Control_Parameters['01-26'],
     kind: ParamKind.UInt16,
@@ -459,4 +462,5 @@ const all = {
   },
 } as const satisfies Record<string, ParamConfig<InverterRegisterMeta>>;
 
+/** Parameter configurations for Group 01, keyed by parameter code. */
 export const group01Params = all;

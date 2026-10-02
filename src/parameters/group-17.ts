@@ -1,5 +1,8 @@
 /**
  * Group 17: Automatic Tuning Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-78 to 4-79 (p478, p479)
  */
 
@@ -221,4 +224,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 17, keyed by parameter code. */
 export const group17Params = all;

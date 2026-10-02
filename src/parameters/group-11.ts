@@ -1,5 +1,8 @@
 /**
  * Group 11: Auxiliary Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-56 to 4-59
  */
 
@@ -914,7 +917,7 @@ const all = {
   },
 
   /**
-   * @param 11-76 Droop Frequency Level 1 -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-59
+   * Droop Frequency Level 1 -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-59
    * @remarks Not listed in the A510 communication addendum (Group 11 register map ends at 11-65).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -935,7 +938,7 @@ const all = {
   },
 
   /**
-   * @param 11-77 Droop Frequency Level 2 -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-59
+   * Droop Frequency Level 2 -- Range: 0.00~599.00, Default: 0.00, Unit: Hz, Manual p.4-59
    * @remarks Not listed in the A510 communication addendum (Group 11 register map ends at 11-65).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -956,7 +959,7 @@ const all = {
   },
 
   /**
-   * @param 11-78 Droop Torque Offset Value -- Range: 0.00~100.00, Default: 0.00, Unit: %, Manual p.4-59
+   * Droop Torque Offset Value -- Range: 0.00~100.00, Default: 0.00, Unit: %, Manual p.4-59
    * @remarks Not listed in the A510 communication addendum (Group 11 register map ends at 11-65).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -979,4 +982,5 @@ const all = {
 
 // ── Group-level lookup ─────────────────────────────────────
 
+/** Parameter configurations for Group 11, keyed by parameter code. */
 export const group11Params = all;

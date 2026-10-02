@@ -24,9 +24,8 @@ type EffectErrorOf<F> = F extends Effect.Effect<any, infer E, any> ? E : never;
 type EffectRequirementsOf<F> = F extends Effect.Effect<any, any, infer R> ? R : never;
 
 /**
- * Device-specific register metadata used by all A510 parameter configs.
- * Extends the base {@link RegisterMeta} with inverter-specific fields.
- * These extra keys are rendered automatically by {@link formatExtraLines}.
+ * Device-specific metadata shared by A510 parameter configs.
+ * The group, code, and manual page fields identify each parameter in the drive's parameter list.
  */
 export interface InverterRegisterMeta extends RegisterMeta {
   readonly group: number;
@@ -35,9 +34,8 @@ export interface InverterRegisterMeta extends RegisterMeta {
 }
 
 /**
- * Read/update operations for a single parameter entry. The error union includes
- * the transport's {@link ModbusError} because `read()` performs a Modbus read
- * and `update()` performs a Modbus write after encoding.
+ * Read and update operations for one parameter entry.
+ * Reads can fail during decoding or Modbus access; updates can fail during encoding or Modbus access.
  */
 export type ParamOperationOfEntry<E extends ParamEntry<any>> = {
   readonly read: () => Effect.Effect<
@@ -55,8 +53,8 @@ export type ParamOperationOfEntry<E extends ParamEntry<any>> = {
 };
 
 /**
- * A callable parameter: invoke with a `deviceId` to get read/update operations,
- * or read its metadata via `.meta`.
+ * A parameter accessor that creates read and update operations for a device.
+ * Its `meta` property exposes the parameter's register metadata.
  */
 export type ParamCallableOfEntry<E extends ParamEntry<any>> = ((
   deviceId: number,
@@ -65,7 +63,7 @@ export type ParamCallableOfEntry<E extends ParamEntry<any>> = ((
 };
 
 /**
- * Maps a record of parameter configs to a record of parameter callables.
+ * Maps each config in a parameter group to a device-specific parameter accessor.
  */
 export type GroupParamOps<C extends Record<string, ParamConfig>> = {
   readonly [K in keyof C]: ParamCallableOfEntry<ParamEntryOfConfig<C[K]>>;

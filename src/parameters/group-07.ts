@@ -1,5 +1,8 @@
 /**
  * Group 07: Start/Stop Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-44 to 4-46
  */
 
@@ -14,7 +17,7 @@ const p445 = 445 as const;
 const p446 = 446 as const;
 
 const all = {
-  /** @param 07-00 Momentary Power Loss/Fault Restart Selection — Range: 0-1, Default: 0, Manual p.4-44 */
+  /** 07-00 Momentary Power Loss/Fault Restart Selection — Range: 0-1, Default: 0, Manual p.4-44 */
   '07-00': {
     register: GROUP_07_Start_Stop_Parameters['07-00'],
     kind: ParamKind.UInt16,
@@ -29,7 +32,7 @@ const all = {
     },
   },
 
-  /** @param 07-01 Fault Auto-Restart Time — Range: 0~7200, Default: 0, Unit: s, Manual p.4-44 */
+  /** 07-01 Fault Auto-Restart Time — Range: 0~7200, Default: 0, Unit: s, Manual p.4-44 */
   '07-01': {
     register: GROUP_07_Start_Stop_Parameters['07-01'],
     kind: ParamKind.UInt16,
@@ -44,7 +47,7 @@ const all = {
     },
   },
 
-  /** @param 07-02 Number of Fault Auto-Restart Attempts — Range: 0~10, Default: 0, Manual p.4-44 */
+  /** 07-02 Number of Fault Auto-Restart Attempts — Range: 0~10, Default: 0, Manual p.4-44 */
   '07-02': {
     register: GROUP_07_Start_Stop_Parameters['07-02'],
     kind: ParamKind.UInt16,
@@ -59,7 +62,7 @@ const all = {
     },
   },
 
-  /** @param 07-04 Direct Start at Power On — Range: 0-1, Default: 1, Manual p.4-44 */
+  /** 07-04 Direct Start at Power On — Range: 0-1, Default: 1, Manual p.4-44 */
   '07-04': {
     register: GROUP_07_Start_Stop_Parameters['07-04'],
     kind: ParamKind.UInt16,
@@ -74,7 +77,7 @@ const all = {
     },
   },
 
-  /** @param 07-05 Delay of Direct Start at Power On — Range: 1.0~300.0, Default: 3.5, Unit: s, Manual p.4-44 */
+  /** 07-05 Delay of Direct Start at Power On — Range: 1.0~300.0, Default: 3.5, Unit: s, Manual p.4-44 */
   '07-05': {
     register: GROUP_07_Start_Stop_Parameters['07-05'],
     kind: ParamKind.Scaled,
@@ -90,7 +93,7 @@ const all = {
     },
   },
 
-  /** @param 07-06 DC Injection Braking Starting Frequency — Range: 0.0~10.0, Default: 0.5, Unit: Hz, Manual p.4-44 */
+  /** 07-06 DC Injection Braking Starting Frequency — Range: 0.0~10.0, Default: 0.5, Unit: Hz, Manual p.4-44 */
   '07-06': {
     register: GROUP_07_Start_Stop_Parameters['07-06'],
     kind: ParamKind.Scaled,
@@ -106,7 +109,7 @@ const all = {
     },
   },
 
-  /** @param 07-07 DC Injection Braking Current — Range: 0~100, Default: 50, Unit: %, Manual p.4-44 */
+  /** 07-07 DC Injection Braking Current — Range: 0~100, Default: 50, Unit: %, Manual p.4-44 */
   '07-07': {
     register: GROUP_07_Start_Stop_Parameters['07-07'],
     kind: ParamKind.UInt16,
@@ -121,7 +124,7 @@ const all = {
     },
   },
 
-  /** @param 07-08 DC Injection Braking Time at Stop — Range: 0.00~100.00, Default: 0.50, Unit: s, Manual p.4-44 */
+  /** 07-08 DC Injection Braking Time at Stop — Range: 0.00~100.00, Default: 0.50, Unit: s, Manual p.4-44 */
   '07-08': {
     register: GROUP_07_Start_Stop_Parameters['07-08'],
     kind: ParamKind.Scaled,
@@ -137,7 +140,7 @@ const all = {
     },
   },
 
-  /** @param 07-09 Stop Mode Selection — Range: 0-3, Default: 0, Manual p.4-44 */
+  /** 07-09 Stop Mode Selection — Range: 0-3, Default: 0, Manual p.4-44 */
   '07-09': {
     register: GROUP_07_Start_Stop_Parameters['07-09'],
     kind: ParamKind.UInt16,
@@ -152,7 +155,7 @@ const all = {
     },
   },
 
-  /** @param 07-13 Low Voltage Detection Level — Range: voltage-dependent, Default: 190/380/546, Unit: V, Manual p.4-44 */
+  /** 07-13 Low Voltage Detection Level — Range: voltage-dependent, Default: 190/380/546, Unit: V, Manual p.4-44 */
   '07-13': {
     register: GROUP_07_Start_Stop_Parameters['07-13'],
     kind: ParamKind.UInt16,
@@ -167,7 +170,7 @@ const all = {
     },
   },
 
-  /** @param 07-14 Pre-excitation Time — Range: 0.00~10.00, Default: 2.00, Unit: s, Manual p.4-44 */
+  /** 07-14 Pre-excitation Time — Range: 0.00~10.00, Default: 2.00, Unit: s, Manual p.4-44 */
   '07-14': {
     register: GROUP_07_Start_Stop_Parameters['07-14'],
     kind: ParamKind.Scaled,
@@ -183,7 +186,7 @@ const all = {
     },
   },
 
-  /** @param 07-15 Pre-excitation Level — Range: 50~200, Default: 100, Unit: %, Manual p.4-44 */
+  /** 07-15 Pre-excitation Level — Range: 50~200, Default: 100, Unit: %, Manual p.4-44 */
   '07-15': {
     register: GROUP_07_Start_Stop_Parameters['07-15'],
     kind: ParamKind.UInt16,
@@ -198,7 +201,7 @@ const all = {
     },
   },
 
-  /** @param 07-16 DC Injection Braking Time at Start — Range: 0.00~100.00, Default: 0.00, Unit: s, Manual p.4-44 */
+  /** 07-16 DC Injection Braking Time at Start — Range: 0.00~100.00, Default: 0.00, Unit: s, Manual p.4-44 */
   '07-16': {
     register: GROUP_07_Start_Stop_Parameters['07-16'],
     kind: ParamKind.Scaled,
@@ -214,7 +217,7 @@ const all = {
     },
   },
 
-  /** @param 07-18 Minimum Base block Time — Range: 0.1~5.0, Default: *, Unit: Sec, Manual p.4-44 */
+  /** 07-18 Minimum Base block Time — Range: 0.1~5.0, Default: *, Unit: Sec, Manual p.4-44 */
   '07-18': {
     register: GROUP_07_Start_Stop_Parameters['07-18'],
     kind: ParamKind.Scaled,
@@ -230,7 +233,7 @@ const all = {
     },
   },
 
-  /** @param 07-19 Direction-Detection Speed Search — Range: 0~100, Default: 50, Unit: %, Manual p.4-44 */
+  /** 07-19 Direction-Detection Speed Search — Range: 0~100, Default: 50, Unit: %, Manual p.4-44 */
   '07-19': {
     register: GROUP_07_Start_Stop_Parameters['07-19'],
     kind: ParamKind.UInt16,
@@ -245,7 +248,7 @@ const all = {
     },
   },
 
-  /** @param 07-20 Speed Search Operating Current — Range: 0~100, Default: 20, Unit: %, Manual p.4-45 */
+  /** 07-20 Speed Search Operating Current — Range: 0~100, Default: 20, Unit: %, Manual p.4-45 */
   '07-20': {
     register: GROUP_07_Start_Stop_Parameters['07-20'],
     kind: ParamKind.UInt16,
@@ -260,7 +263,7 @@ const all = {
     },
   },
 
-  /** @param 07-21 Integral Time of Speed Searching — Range: 0.1~10.0, Default: 2.0, Unit: Sec, Manual p.4-45 */
+  /** 07-21 Integral Time of Speed Searching — Range: 0.1~10.0, Default: 2.0, Unit: Sec, Manual p.4-45 */
   '07-21': {
     register: GROUP_07_Start_Stop_Parameters['07-21'],
     kind: ParamKind.Scaled,
@@ -276,7 +279,7 @@ const all = {
     },
   },
 
-  /** @param 07-22 Delay Time of Speed Searching — Range: 0.0~20.0, Default: 0.2, Unit: Sec, Manual p.4-45 */
+  /** 07-22 Delay Time of Speed Searching — Range: 0.0~20.0, Default: 0.2, Unit: Sec, Manual p.4-45 */
   '07-22': {
     register: GROUP_07_Start_Stop_Parameters['07-22'],
     kind: ParamKind.Scaled,
@@ -292,7 +295,7 @@ const all = {
     },
   },
 
-  /** @param 07-23 Voltage Recovery Time — Range: 0.1~5.0, Default: 2.0, Unit: Sec, Manual p.4-45 */
+  /** 07-23 Voltage Recovery Time — Range: 0.1~5.0, Default: 2.0, Unit: Sec, Manual p.4-45 */
   '07-23': {
     register: GROUP_07_Start_Stop_Parameters['07-23'],
     kind: ParamKind.Scaled,
@@ -308,7 +311,7 @@ const all = {
     },
   },
 
-  /** @param 07-24 Direction-Detection Speed Search Selection — Range: 0-1, Default: 1, Manual p.4-45 */
+  /** 07-24 Direction-Detection Speed Search Selection — Range: 0-1, Default: 1, Manual p.4-45 */
   '07-24': {
     register: GROUP_07_Start_Stop_Parameters['07-24'],
     kind: ParamKind.UInt16,
@@ -323,7 +326,7 @@ const all = {
     },
   },
 
-  /** @param 07-25 Low Voltage Detection Time — Range: 0.00~1.00, Default: 0.02, Unit: Sec, Manual p.4-45 */
+  /** 07-25 Low Voltage Detection Time — Range: 0.00~1.00, Default: 0.02, Unit: Sec, Manual p.4-45 */
   '07-25': {
     register: GROUP_07_Start_Stop_Parameters['07-25'],
     kind: ParamKind.Scaled,
@@ -339,7 +342,7 @@ const all = {
     },
   },
 
-  /** @param 07-26 Start-up Mode Selection of SLV Coast to Stop — Range: 0-1, Default: 0, Manual p.4-45 */
+  /** 07-26 Start-up Mode Selection of SLV Coast to Stop — Range: 0-1, Default: 0, Manual p.4-45 */
   '07-26': {
     register: GROUP_07_Start_Stop_Parameters['07-26'],
     kind: ParamKind.UInt16,
@@ -354,7 +357,7 @@ const all = {
     },
   },
 
-  /** @param 07-27 Start Selection after Fault during SLV Mode — Range: 0-1, Default: 0, Manual p.4-45 */
+  /** 07-27 Start Selection after Fault during SLV Mode — Range: 0-1, Default: 0, Manual p.4-45 */
   '07-27': {
     register: GROUP_07_Start_Stop_Parameters['07-27'],
     kind: ParamKind.UInt16,
@@ -369,7 +372,7 @@ const all = {
     },
   },
 
-  /** @param 07-28 Start after External Base Block — Range: 0-1, Default: 0, Manual p.4-45 */
+  /** 07-28 Start after External Base Block — Range: 0-1, Default: 0, Manual p.4-45 */
   '07-28': {
     register: GROUP_07_Start_Stop_Parameters['07-28'],
     kind: ParamKind.UInt16,
@@ -384,7 +387,7 @@ const all = {
     },
   },
 
-  /** @param 07-29 Run Command Selection at DC Braking — Range: 0-1, Default: 0, Manual p.4-45 */
+  /** 07-29 Run Command Selection at DC Braking — Range: 0-1, Default: 0, Manual p.4-45 */
   '07-29': {
     register: GROUP_07_Start_Stop_Parameters['07-29'],
     kind: ParamKind.UInt16,
@@ -399,7 +402,7 @@ const all = {
     },
   },
 
-  /** @param 07-30 Low Voltage Level Selection — Range: 0-1, Default: 0, Manual p.4-45 */
+  /** 07-30 Low Voltage Level Selection — Range: 0-1, Default: 0, Manual p.4-45 */
   '07-30': {
     register: GROUP_07_Start_Stop_Parameters['07-30'],
     kind: ParamKind.UInt16,
@@ -414,7 +417,7 @@ const all = {
     },
   },
 
-  /** @param 07-31 Low Voltage Run Frequency — Range: 0.00~599.00, Default: 10.00, Unit: Hz, Manual p.4-45 */
+  /** 07-31 Low Voltage Run Frequency — Range: 0.00~599.00, Default: 10.00, Unit: Hz, Manual p.4-45 */
   '07-31': {
     register: GROUP_07_Start_Stop_Parameters['07-31'],
     kind: ParamKind.Scaled,
@@ -430,7 +433,7 @@ const all = {
     },
   },
 
-  /** @param 07-32 Speed Search Mode Selection — Range: 0-2, Default: 0, Manual p.4-45 */
+  /** 07-32 Speed Search Mode Selection — Range: 0-2, Default: 0, Manual p.4-45 */
   '07-32': {
     register: GROUP_07_Start_Stop_Parameters['07-32'],
     kind: ParamKind.UInt16,
@@ -445,7 +448,7 @@ const all = {
     },
   },
 
-  /** @param 07-33 Start Frequency of Speed Search Selection — Range: 0-1, Default: 0, Manual p.4-45 */
+  /** 07-33 Start Frequency of Speed Search Selection — Range: 0-1, Default: 0, Manual p.4-45 */
   '07-33': {
     register: GROUP_07_Start_Stop_Parameters['07-33'],
     kind: ParamKind.UInt16,
@@ -461,7 +464,7 @@ const all = {
   },
 
   /**
-   * @param 07-34 Short-circuit Braking Time at Start — Range: 0.00~100.00, Default: 0.00, Unit: Sec, Manual p.4-45
+   * 07-34 Short-circuit Braking Time at Start — Range: 0.00~100.00, Default: 0.00, Unit: Sec, Manual p.4-45
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -482,7 +485,7 @@ const all = {
   },
 
   /**
-   * @param 07-35 Short-circuit Braking Time at Stop — Range: 0.00~100.00, Default: 0.50, Unit: Sec, Manual p.4-45
+   * 07-35 Short-circuit Braking Time at Stop — Range: 0.00~100.00, Default: 0.50, Unit: Sec, Manual p.4-45
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -503,7 +506,7 @@ const all = {
   },
 
   /**
-   * @param 07-36 Short-circuit Braking Current — Range: 0.0~200.0, Default: 100.0, Unit: %, Manual p.4-45
+   * 07-36 Short-circuit Braking Current — Range: 0.0~200.0, Default: 100.0, Unit: %, Manual p.4-45
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -524,7 +527,7 @@ const all = {
   },
 
   /**
-   * @param 07-42 Voltage Limit Gain — Range: 0.0~50.0, Default: 0, Unit: %, Manual p.4-46
+   * 07-42 Voltage Limit Gain — Range: 0.0~50.0, Default: 0, Unit: %, Manual p.4-46
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -545,7 +548,7 @@ const all = {
   },
 
   /**
-   * @param 07-43 Short-circuit Braking Time of PM Speed Search — Range: 0.00~100.00, Default: 0.00, Unit: Sec, Manual p.4-46
+   * 07-43 Short-circuit Braking Time of PM Speed Search — Range: 0.00~100.00, Default: 0.00, Unit: Sec, Manual p.4-46
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -566,7 +569,7 @@ const all = {
   },
 
   /**
-   * @param 07-44 DC Braking Time of PM Speed Search — Range: 0.00~100.00, Default: 0.00, Unit: Sec, Manual p.4-46
+   * 07-44 DC Braking Time of PM Speed Search — Range: 0.00~100.00, Default: 0.00, Unit: Sec, Manual p.4-46
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -587,7 +590,7 @@ const all = {
   },
 
   /**
-   * @param 07-45 STP2 Function Selection — Range: 0-1, Default: 0, Manual p.4-46
+   * 07-45 STP2 Function Selection — Range: 0-1, Default: 0, Manual p.4-46
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -607,7 +610,7 @@ const all = {
   },
 
   /**
-   * @param 07-46 DC Injection Current Limit — Range: 0~150, Default: 100, Unit: %, Manual p.4-46
+   * 07-46 DC Injection Current Limit — Range: 0~150, Default: 100, Unit: %, Manual p.4-46
    * @remarks Not listed in the A510 communication addendum (Group 7 register map ends at 07-33).
    *          Returned Modbus exception 2 (Illegal Data Address) on test device.
    *          Retained for completeness per the instruction manual parameter table.
@@ -627,4 +630,5 @@ const all = {
   },
 } as const satisfies Record<string, ParamConfig<InverterRegisterMeta>>;
 
+/** Parameter configurations for Group 07, keyed by parameter code. */
 export const group07Params = all;

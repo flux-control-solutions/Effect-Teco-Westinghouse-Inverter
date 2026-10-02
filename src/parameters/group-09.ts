@@ -1,5 +1,8 @@
 /**
  * Group 09: Communication Parameters
+ *
+ * This module defines the parameter configurations available for this group.
+ * Values include device register mappings, codecs, and display metadata.
  * Manual pages 4-52
  */
 
@@ -12,7 +15,7 @@ const group = 9 as const;
 const p452 = 452 as const;
 
 const all = {
-  /** @param 09-00 INV Communication Station Address -- Range: 1~31, Default: 1, Manual p.4-52 */
+  /** INV Communication Station Address -- Range: 1~31, Default: 1, Manual p.4-52 */
   '09-00': {
     register: GROUP_09_Communication_Parameters['09-00'],
     kind: ParamKind.UInt16,
@@ -27,7 +30,7 @@ const all = {
     },
   },
 
-  /** @param 09-01 Communication Mode Selection -- Range: 0 (MODBUS), Default: 0, Manual p.4-52 */
+  /** Communication Mode Selection -- Range: 0 (MODBUS), Default: 0, Manual p.4-52 */
   '09-01': {
     register: GROUP_09_Communication_Parameters['09-01'],
     kind: ParamKind.UInt16,
@@ -42,7 +45,7 @@ const all = {
     },
   },
 
-  /** @param 09-02 Baud Rate Setting (bps) -- Range: 0-5, Default: 4, Manual p.4-52 */
+  /** Baud Rate Setting (bps) -- Range: 0-5, Default: 4, Manual p.4-52 */
   '09-02': {
     register: GROUP_09_Communication_Parameters['09-02'],
     kind: ParamKind.UInt16,
@@ -57,7 +60,7 @@ const all = {
     },
   },
 
-  /** @param 09-03 Stop Bit Selection -- Range: 0-1, Default: 0, Manual p.4-52 */
+  /** Stop Bit Selection -- Range: 0-1, Default: 0, Manual p.4-52 */
   '09-03': {
     register: GROUP_09_Communication_Parameters['09-03'],
     kind: ParamKind.UInt16,
@@ -72,7 +75,7 @@ const all = {
     },
   },
 
-  /** @param 09-04 Parity Selection -- Range: 0-2, Default: 0, Manual p.4-52 */
+  /** Parity Selection -- Range: 0-2, Default: 0, Manual p.4-52 */
   '09-04': {
     register: GROUP_09_Communication_Parameters['09-04'],
     kind: ParamKind.UInt16,
@@ -87,7 +90,7 @@ const all = {
     },
   },
 
-  /** @param 09-05 Communication DataBit Selection -- Range: 0-1, Default: 0, Manual p.4-52 */
+  /** Communication DataBit Selection -- Range: 0-1, Default: 0, Manual p.4-52 */
   '09-05': {
     register: GROUP_09_Communication_Parameters['09-05'],
     kind: ParamKind.UInt16,
@@ -102,7 +105,7 @@ const all = {
     },
   },
 
-  /** @param 09-06 Communication Error Detection Time -- Range: 0.0~25.5, Default: 0.0, Unit: S, Manual p.4-52 */
+  /** Communication Error Detection Time -- Range: 0.0~25.5, Default: 0.0, Unit: S, Manual p.4-52 */
   '09-06': {
     register: GROUP_09_Communication_Parameters['09-06'],
     kind: ParamKind.Scaled,
@@ -118,7 +121,7 @@ const all = {
     },
   },
 
-  /** @param 09-07 Fault Stop Selection -- Range: 0-3, Default: 3, Manual p.4-52 */
+  /** Fault Stop Selection -- Range: 0-3, Default: 3, Manual p.4-52 */
   '09-07': {
     register: GROUP_09_Communication_Parameters['09-07'],
     kind: ParamKind.UInt16,
@@ -133,7 +136,7 @@ const all = {
     },
   },
 
-  /** @param 09-08 Comm. Fault Tolerance Count -- Range: 1~20, Default: 1, Manual p.4-52 */
+  /** Comm. Fault Tolerance Count -- Range: 1~20, Default: 1, Manual p.4-52 */
   '09-08': {
     register: GROUP_09_Communication_Parameters['09-08'],
     kind: ParamKind.UInt16,
@@ -148,7 +151,7 @@ const all = {
     },
   },
 
-  /** @param 09-09 Waiting Time -- Range: 5~65, Default: 5, Unit: ms, Manual p.4-52 */
+  /** Waiting Time -- Range: 5~65, Default: 5, Unit: ms, Manual p.4-52 */
   '09-09': {
     register: GROUP_09_Communication_Parameters['09-09'],
     kind: ParamKind.UInt16,
@@ -164,4 +167,5 @@ const all = {
   },
 } as const satisfies Record<string, ParamConfig<InverterRegisterMeta>>;
 
+/** Parameter configurations for Group 09, keyed by parameter code. */
 export const group09Params = all;
