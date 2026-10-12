@@ -55,7 +55,7 @@
     "@effect/platform-bun": "4.0.3",
     "@flux-control/effect-modbus-rs": "^0.9.0",
     "@oxlint/plugins": "1.87.0",
-    "@types/bun": "latest",
+    "@types/bun": "^1.4.3",
     "effect": "4.0.3",
     "fallow": "^3.33.1",
     "husky": "^9.1.7",
