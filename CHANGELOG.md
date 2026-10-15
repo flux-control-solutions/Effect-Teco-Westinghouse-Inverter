@@ -1,5 +1,11 @@
 # @flux-control/effect-teco-westinghouse-inverter
 
+## 0.9.0
+
+### Minor Changes
+
+- f5a9fe8: The `@flux-control/effect-modbus-rs` peer dependency is now `^0.10.0`. Version 0.10.0 adds coil batching and new write options to the batching client. This package does not use the new options.
+
 ## 0.8.0
 
 ### Minor Changes
